@@ -220,7 +220,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <div class="rcard"><div class="rcard-t">🔥 กันฟาร์ม (ทีมเดิม/วัน)</div>
         <div class="rrow"><span>เกมที่ 1–3</span><span class="rval">100%</span></div>
         <div class="rrow"><span>เกมที่ 4</span><span class="rval" style="color:var(--accent2)">50%</span></div>
-        <div class="rrow"><span>เกมที่ 5+</span><span class="rval" style="color:var(--red)">25%</span></div>
+        <div class="rrow"><span>เกมที่ 5+</span><span class="rval" style="color:var(--red)">20%</span></div>
       </div>
       <div class="rcard"><div class="rcard-t">🧊 แพ้ติดต่อกัน (Streak)</div>
         <div class="rrow"><span>เกมที่ 3 ในสตรีค</span><span class="rval" style="color:var(--blue)">ฟรีซ (0)</span></div>
@@ -334,7 +334,7 @@ function computeDeltas(winners, losers, sw, sl){
   // 3. Farm multiplier
   const fc = getFarmCount(winners,losers);
   let farmMult = 1.0;
-  if(fc>=4) farmMult=0.25;
+  if(fc>=4) farmMult=0.20;
   else if(fc>=3) farmMult=0.5;
   const farmHit = fc>=3;
 
