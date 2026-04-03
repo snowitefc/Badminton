@@ -333,10 +333,10 @@ function computeDeltas(winners, losers, sw, sl){
   if(sw!==null && sl!==null && (sw-sl)>=8) margin=150;
 
   // 3. Farm multiplier
-  const fc = getFarmCount(winners, losers);
+  const fc = getFarmCount(winners);
   let farmMult = 1.0;
-  if(fc>=6) farmMult=0.5;
-  else if(fc>=3) farmMult=0.75;
+  if(fc>=6) farmMult=0.25;
+  else if(fc>=3) farmMult=0.5;
   const farmHit = fc>=3;
 
   // 4. Anti-Carry per team
