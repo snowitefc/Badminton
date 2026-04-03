@@ -208,7 +208,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
         <div class="rrow"><span>ชนะ</span><span class="rval" style="color:var(--green)">+800</span></div>
         <div class="rrow"><span>แพ้</span><span class="rval" style="color:var(--red)">−1,200</span></div>
       </div>
-      <div class="rcard"><div class="rcard-t">🎯 Margin Score (แต้มต่าง ≥ 10)</div>
+      <div class="rcard"><div class="rcard-t">🎯 Margin Score (แต้มต่าง ≥ 9)</div>
         <div class="rrow"><span>ชนะ bonus</span><span class="rval" style="color:var(--green)">+150</span></div>
         <div class="rrow"><span>แพ้ penalty</span><span class="rval" style="color:var(--red)">−150</span></div>
       </div>
@@ -328,7 +328,7 @@ function computeDeltas(winners, losers, sw, sl){
 
   // 2. Margin
   let margin = 0;
-  if(sw!==null && sl!==null && (sw-sl)>=10) margin=150;
+  if(sw!==null && sl!==null && (sw-sl)>=9) margin=150;
 
   // 3. Farm multiplier
   const fc = getFarmCount(winners,losers);
