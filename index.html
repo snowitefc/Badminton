@@ -177,7 +177,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <div class="score-box">
         <input class="score-inp" id="score-w" type="number" min="0" max="30" placeholder="21">
         <div class="score-dash">—</div>
-        <input class="score-inp" id="score-l" type="number" min="0" max="30" placeholder="15">
+        <input class="score-inp" id="score-l" type="number" min="0" max="30" placeholder="">
       </div>
     </div>
     <button class="btn btn-g btn-full" onclick="recordMatch()">✅ บันทึกผลการแข่งขัน</button>
@@ -296,7 +296,7 @@ function getElo(id){ const m=gm(id); return m?(m.elo??BASE):BASE; }
 function teamAvgElo(ids){ return ids.reduce((s,id)=>s+getElo(id),0)/ids.length; }
 
 // Farm: count times this exact pair (winners vs losers) played today
-function getFarmCount(wIds, lIds){
+function getFarmCount(wIds){
   const ds = todayStr();
   return S.matches.filter(m => {
     if(m.dateStr!==ds) return false;
