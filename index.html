@@ -249,7 +249,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     </div>
   </div>
 </div>
-
 <!-- MODAL EDIT MATCH -->
 <div class="overlay" id="modal-edit">
   <div class="modal">
@@ -295,14 +294,14 @@ const FLOOR = 8000;
 function getElo(id){ const m=gm(id); return m?(m.elo??BASE):BASE; }
 function teamAvgElo(ids){ return ids.reduce((s,id)=>s+getElo(id),0)/ids.length; }
 
-// Farm: count times this exact pair (winners vs losers) played today
+
+  // Farm: count times this winners team played today (not exact pair)
 function getFarmCount(wIds){
   const ds = todayStr();
   return S.matches.filter(m => {
     if(m.dateStr!==ds) return false;
     const sw = wIds.length===m.winners.length && wIds.every(id=>m.winners.includes(id));
-    const sl = lIds.length===m.losers.length && lIds.every(id=>m.losers.includes(id));
-    return sw && sl;
+    return sw;  // ✅ Only check if same winners, not the losers
   }).length;
 }
 
