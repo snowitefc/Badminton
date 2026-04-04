@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏸 SnowiteFC Badminton</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK (no auth — Firestore only) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, onSnapshot }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // =====================================================
+  // 🔥 วาง Firebase config ของคุณที่นี่
+  // =====================================================
+  const firebaseConfig = {
+
+  apiKey: "AIzaSyCC1AYaGR9bkOglz5CNA5gWoOshsQB9-cU",
+
+  authDomain: "snowitefc.firebaseapp.com",
+
+  projectId: "snowitefc",
+
+  storageBucket: "snowitefc.firebasestorage.app",
+
+  messagingSenderId: "789793746642",
+
+  appId: "1:789793746642:web:16ee2de9ad6a84b5cb470b",
+
+  measurementId: "G-PBY89JN9PQ"
+
+};
+
+  // =====================================================
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const DOC = doc(db, "snowitefcDB", "club");
+
+  // Save to Firestore
+  window.fbSave = async (data) => {
+    try {
+      await setDoc(DOC, { state: JSON.stringify(data) });
+      const ts = new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+      const el = document.getElementById('sync-time');
+      if(el) el.textContent = `ซิงค์ ${ts}`;
+      const dot = document.getElementById('sync-dot');
+      if(dot){ dot.style.background='var(--green)'; dot.style.boxShadow='0 0 6px var(--green)'; }
+    } catch(e) {
+      console.warn("Firestore save failed:", e);
+      const dot = document.getElementById('sync-dot');
+      if(dot){ dot.style.background='var(--red)'; dot.style.boxShadow='0 0 6px var(--red)'; }
+    }
+  };
+
+  // Real-time listener — syncs whenever data changes from any device
+  onSnapshot(DOC, (snap) => {
+    if(!snap.exists()) return;
+    try {
+      const remote = JSON.parse(snap.data().state);
+      window.S = remote;
+      localStorage.setItem('bcm4', JSON.stringify(remote));
+      if(typeof renderAll === 'function') renderAll();
+      const ts = new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+      const el = document.getElementById('sync-time');
+      if(el) el.textContent = `ซิงค์ ${ts}`;
+    } catch(e) { console.warn("Firestore parse error:", e); }
+  });
+</script>
+
+<style>
+:root {
+  --bg:#080c10; --s1:#0d1117; --s2:#161c24; --s3:#1e2733; --border:#222d3a;
+  --accent:#f0c040; --accent2:#e07820; --green:#22c55e; --red:#f43f5e;
+  --blue:#38bdf8; --purple:#a78bfa; --text:#e8edf2; --muted:#556070; --dim:#8896a4;
+  --mono:'IBM Plex Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Kanit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 100% 60% at 0% 0%,rgba(240,192,64,.04) 0%,transparent 55%),
+             radial-gradient(ellipse 70% 50% at 100% 100%,rgba(224,120,32,.05) 0%,transparent 55%);}
+.header{position:sticky;top:0;z-index:100;background:rgba(8,12,16,.92);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 20px;height:56px;}
+.logo{font-size:18px;font-weight:900;letter-spacing:-.5px;white-space:nowrap;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav{display:flex;gap:2px;flex:1;overflow-x:auto;}.nav::-webkit-scrollbar{display:none;}
+.nb{background:none;border:none;color:var(--muted);font-family:'Kanit',sans-serif;font-size:15px;font-weight:600;
+  padding:7px 13px;border-radius:6px;cursor:pointer;transition:all .18s;white-space:nowrap;}
+.nb:hover{color:var(--text);background:var(--s2);}.nb.on{color:var(--accent);background:rgba(240,192,64,.1);}
+.main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:20px 14px;}
+.page{display:none;animation:up .25s ease;}.page.on{display:block;}
+@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:680px){.g2{grid-template-columns:1fr;}.g4{grid-template-columns:repeat(2,1fr);}}
+.panel{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;}
+.pt{font-size:14px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.pt-action{margin-left:auto;}
+.scard{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px;transition:border-color .2s,transform .2s;}
+.scard:hover{border-color:var(--accent);transform:translateY(-2px);}
+.scard-icon{font-size:22px;margin-bottom:6px;}
+.scard-val{font-family:var(--mono);font-size:28px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.scard-lbl{font-size:13px;color:var(--muted);margin-top:2px;}
+.rtable{width:100%;border-collapse:collapse;font-size:14px;}
+.rtable th{text-align:left;padding:8px 10px;background:var(--s2);color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
+.rtable th:first-child{border-radius:6px 0 0 6px;}.rtable th:last-child{border-radius:0 6px 6px 0;}
+.rtable td{padding:11px 10px;border-bottom:1px solid rgba(34,45,58,.6);vertical-align:middle;}
+.rtable tr:last-child td{border-bottom:none;}.rtable tr:hover td{background:rgba(255,255,255,.015);}
+.rnk{font-family:var(--mono);font-weight:700;font-size:14px;}
+.r1{color:#f0c040;}.r2{color:#94a3b8;}.r3{color:#d97706;}
+.elo-val{font-family:var(--mono);font-weight:700;font-size:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.wr-bar{height:3px;background:var(--border);border-radius:2px;margin-top:3px;overflow:hidden;width:70px;}
+.wr-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:99px;font-size:12px;font-weight:600;}
+.bg-green{background:rgba(34,197,94,.12);color:var(--green);}
+.bg-red{background:rgba(244,63,94,.12);color:var(--red);}
+.bg-gray{background:var(--s3);color:var(--dim);}
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#000;flex-shrink:0;}
+.fg{margin-bottom:14px;}
+.fl{font-size:13px;color:var(--muted);margin-bottom:6px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+.fi,.fs{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:'Kanit',sans-serif;font-size:15px;padding:10px 12px;border-radius:7px;outline:none;transition:border-color .18s;}
+.fi:focus,.fs:focus{border-color:var(--accent);}.fs option{background:var(--s2);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-radius:7px;font-family:'Kanit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;border:none;transition:all .18s;}
+.btn-y{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;}
+.btn-y:hover{opacity:.85;transform:translateY(-1px);}
+.btn-g{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:var(--green);}
+.btn-g:hover{background:rgba(34,197,94,.2);}
+.btn-r{background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.25);color:var(--red);}
+.btn-r:hover{background:rgba(244,63,94,.18);}
+.btn-s{background:var(--s2);border:1px solid var(--border);color:var(--text);}
+.btn-s:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm{padding:5px 10px;font-size:13px;}.btn-full{width:100%;}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+.mcard{background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .18s;}
+.mcard:hover{border-color:var(--accent);transform:translateY(-1px);}
+.mcard-name{font-size:14px;font-weight:700;text-align:center;}
+.mcard-elo{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600;}
+.mcard-sub{font-size:10px;color:var(--muted);text-align:center;}
+.court-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;}
+.court-card{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.court-lbl{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:10px;}
+.vs-wrap{display:grid;grid-template-columns:1fr 28px 1fr;gap:6px;align-items:center;}
+.vs-txt{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--muted);text-align:center;}
+.team-box{background:rgba(0,0,0,.2);border-radius:7px;padding:7px 8px;}
+.team-p{font-size:12px;font-weight:600;line-height:1.7;}
+.team-elo{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px;}
+.mlog{background:var(--s2);border-radius:8px;padding:10px 12px;margin-bottom:6px;font-size:12px;display:flex;align-items:flex-start;gap:10px;border-left:3px solid transparent;}
+.mlog.farm{border-left-color:var(--accent2);}
+.mlog.frozen{border-left-color:var(--blue);}
+.mlog-w{color:var(--green);font-weight:700;flex:1;min-width:0;}
+.mlog-l{color:var(--red);font-weight:600;flex:1;min-width:0;}
+.chip{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:5px;font-family:var(--mono);font-size:10px;font-weight:700;}
+.chip-up{background:rgba(34,197,94,.12);color:var(--green);}
+.chip-dn{background:rgba(244,63,94,.12);color:var(--red);}
+.chip-0{background:var(--s3);color:var(--muted);}
+.chip-ice{background:rgba(56,189,248,.12);color:var(--blue);}
+.score-box{display:flex;align-items:center;justify-content:center;gap:10px;margin:12px 0;}
+.score-inp{width:56px;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:22px;font-weight:700;text-align:center;padding:8px;border-radius:8px;outline:none;}
+.score-inp:focus{border-color:var(--accent);}
+.score-dash{font-family:var(--mono);font-size:18px;color:var(--muted);}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:14px;}
+.overlay.on{display:flex;animation:up .2s ease;}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:22px;width:100%;max-width:420px;max-height:92vh;overflow-y:auto;}
+.modal-t{font-size:17px;font-weight:800;margin-bottom:18px;}
+.modal-act{display:flex;gap:8px;margin-top:14px;}
+.toast{position:fixed;bottom:20px;right:20px;z-index:999;background:var(--s1);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:13px;display:flex;align-items:center;gap:8px;box-shadow:0 8px 28px rgba(0,0,0,.45);transform:translateY(70px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);max-width:300px;}
+.toast.on{transform:translateY(0);opacity:1;}
+.rule-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
+.rcard{background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:14px;}
+.rcard-t{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px;}
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(34,45,58,.5);font-size:12px;}
+.rrow:last-child{border-bottom:none;}
+.rval{font-family:var(--mono);font-weight:700;font-size:12px;}
+.divider{height:1px;background:var(--border);margin:14px 0;}
+.empty{text-align:center;padding:36px 16px;color:var(--muted);}
+.empty-i{font-size:36px;margin-bottom:10px;}.empty-t{font-size:13px;}
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">🏸 SwFC</div>
+  <nav class="nav">
+    <button class="nb on" onclick="tab('dashboard',this)">📊 Dashboard</button>
+    <button class="nb" onclick="tab('club',this)">👥 ก๊วน</button>
+    <button class="nb" onclick="tab('rules',this)">📋 กติกา</button>
+  </nav>
+</header>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page on">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 14px;background:var(--s1);border:1px solid var(--border);border-radius:8px;font-size:13px;">
+    <span id="sync-dot" style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;flex-shrink:0;transition:background .3s,box-shadow .3s;"></span>
+    <span style="color:var(--muted);">🔥 Firebase</span>
+    <span id="sync-time" style="color:var(--dim);margin-left:4px;"></span>
+  </div>
+  <div class="g4" style="margin-bottom:14px;">
+    <div class="scard"><div class="scard-icon">👥</div><div class="scard-val" id="st-members">0</div><div class="scard-lbl">สมาชิก</div></div>
+    <div class="scard"><div class="scard-icon">🎯</div><div class="scard-val" id="st-matches">0</div><div class="scard-lbl">แมตช์ทั้งหมด</div></div>
+    <div class="scard"><div class="scard-icon">📅</div><div class="scard-val" id="st-today">0</div><div class="scard-lbl">แมตช์วันนี้</div></div>
+    <div class="scard"><div class="scard-icon">🔥</div><div class="scard-val" id="st-farm">0</div><div class="scard-lbl">Farm blocked</div></div>
+  </div>
+  <div class="g2">
+    <div class="panel">
+      <div class="pt">🌍 Snowite World Ranking</div>
+      <div id="ranking-list"><div class="empty"><div class="empty-i">📊</div><div class="empty-t">เพิ่มสมาชิกและบันทึกผล</div></div></div>
+    </div>
+    <div class="panel">
+      <div class="pt">📋 แมตช์ล่าสุด</div>
+      <div id="recent-matches"><div class="empty"><div class="empty-i">🎯</div><div class="empty-t">ยังไม่มีการแข่งขัน</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CLUB -->
+<div id="page-club" class="page">
+  <div class="panel">
+    <div class="pt">👥 สมาชิก <button class="btn btn-y btn-sm pt-action" onclick="openModal('modal-add')">➕ เพิ่มสมาชิก</button></div>
+    <div id="member-grid" class="mgrid"><div class="empty" style="grid-column:1/-1"><div class="empty-i">👤</div><div class="empty-t">คลิก "เพิ่มสมาชิก"</div></div></div>
+  </div>
+  <div class="panel">
+    <div class="pt">🎯 จัดคอร์ท <button class="btn btn-sm btn-s pt-action" onclick="randomCourts()">🎲 สุ่มจัดคอร์ท</button></div>
+    <div id="court-list"><div class="empty"><div class="empty-i">🏸</div><div class="empty-t">กด "สุ่มจัดคอร์ท"</div></div></div>
+  </div>
+  <div class="panel">
+    <div class="pt">📝 บันทึกผล</div>
+    <div class="g2">
+      <div>
+        <div style="color:var(--green);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;">✅ ฝั่งชนะ</div>
+        <div class="fg"><label class="fl">ผู้เล่น 1</label><select class="fs" id="w1"><option value="">-- เลือก --</option></select></div>
+        <div class="fg"><label class="fl">ผู้เล่น 2</label><select class="fs" id="w2"><option value="">-- เลือก (คู่) --</option></select></div>
+      </div>
+      <div>
+        <div style="color:var(--red);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;">❌ ฝั่งแพ้</div>
+        <div class="fg"><label class="fl">ผู้เล่น 1</label><select class="fs" id="l1"><option value="">-- เลือก --</option></select></div>
+        <div class="fg"><label class="fl">ผู้เล่น 2</label><select class="fs" id="l2"><option value="">-- เลือก (คู่) --</option></select></div>
+      </div>
+    </div>
+    <div style="margin:0 0 14px;">
+      <label class="fl">แต้มในเกม (ไม่บังคับ — ใช้คำนวณ Margin Score)</label>
+      <div class="score-box">
+        <input class="score-inp" id="score-w" type="number" min="0" max="30" placeholder="21">
+        <div class="score-dash">—</div>
+        <input class="score-inp" id="score-l" type="number" min="0" max="30" placeholder="">
+      </div>
+    </div>
+    <button class="btn btn-g btn-full" onclick="recordMatch()">✅ บันทึกผลการแข่งขัน</button>
+  </div>
+  <div class="panel">
+    <div class="pt">📜 ประวัติการแข่งขัน</div>
+    <div id="match-history"><div class="empty"><div class="empty-i">📋</div><div class="empty-t">ยังไม่มีประวัติ</div></div></div>
+  </div>
+</div>
+
+<!-- RULES -->
+<div id="page-rules" class="page">
+  <div class="panel">
+    <div class="pt">📋 กติการะบบคะแนน</div>
+    <div class="rule-grid">
+      <div class="rcard"><div class="rcard-t">⚡ คะแนนตั้งต้น</div>
+        <div class="rrow"><span>เริ่มต้นทุกคน</span><span class="rval" style="color:var(--accent)">10,000</span></div>
+      </div>
+      <div class="rcard"><div class="rcard-t">🟰 สูสี (|Δ| ≤ 1500)</div>
+        <div class="rrow"><span>ชนะ</span><span class="rval" style="color:var(--green)">+1,000</span></div>
+        <div class="rrow"><span>แพ้</span><span class="rval" style="color:var(--red)">−1,000</span></div>
+      </div>
+      <div class="rcard"><div class="rcard-t">⬆️ เจอทีมเก่งกว่า</div>
+        <div class="rrow"><span>ชนะ</span><span class="rval" style="color:var(--green)">+1,200</span></div>
+        <div class="rrow"><span>แพ้</span><span class="rval" style="color:var(--red)">−600</span></div>
+      </div>
+      <div class="rcard"><div class="rcard-t">⬇️ เจอทีมอ่อนกว่า</div>
+        <div class="rrow"><span>ชนะ</span><span class="rval" style="color:var(--green)">+800</span></div>
+        <div class="rrow"><span>แพ้</span><span class="rval" style="color:var(--red)">−1,200</span></div>
+      </div>
+      <div class="rcard"><div class="rcard-t">🎯 Margin Score (แต้มต่าง ≥ 9)</div>
+        <div class="rrow"><span>ชนะ bonus</span><span class="rval" style="color:var(--green)">+150</span></div>
+        <div class="rrow"><span>แพ้ penalty</span><span class="rval" style="color:var(--red)">−150</span></div>
+      </div>
+      <div class="rcard"><div class="rcard-t">🤝 Anti-Carry (ต่างในทีม &gt; 1,500)</div>
+        <div class="rrow"><span>คนคะแนนสูง</span><span class="rval">×0.8</span></div>
+        <div class="rrow"><span>คนคะแนนต่ำ</span><span class="rval">×1.2</span></div>
+      </div>
+      <div class="rcard"><div class="rcard-t">🔥 กันฟาร์ม (ทีมเดิม/วัน)</div>
+        <div class="rrow"><span>เกมที่ 1–3</span><span class="rval">100%</span></div>
+        <div class="rrow"><span>เกมที่ 4</span><span class="rval" style="color:var(--accent2)">50%</span></div>
+        <div class="rrow"><span>เกมที่ 5+</span><span class="rval" style="color:var(--red)">20%</span></div>
+      </div>
+      <div class="rcard"><div class="rcard-t">🧊 แพ้ติดต่อกัน (Streak)</div>
+        <div class="rrow"><span>เกมที่ 3 ในสตรีค</span><span class="rval" style="color:var(--blue)">ฟรีซ (0)</span></div>
+        <div class="rrow"><span>เกมที่ 4+ ในสตรีค</span><span class="rval" style="color:var(--accent2)">−50%</span></div>
+        <div class="rrow"><span>รีเซ็ตเมื่อ</span><span class="rval">ชนะ 1 เกม</span></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:12px;color:var(--muted);line-height:2;">
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- MODAL ADD -->
+<div class="overlay" id="modal-add">
+  <div class="modal">
+    <div class="modal-t">➕ เพิ่มสมาชิกใหม่</div>
+    <div class="fg"><label class="fl">ชื่อ *</label><input class="fi" id="nm-name" placeholder="ชื่อ-นามสกุล"></div>
+    <div class="fg"><label class="fl">เบอร์โทร (ไม่บังคับ)</label><input class="fi" id="nm-phone" placeholder="08x-xxx-xxxx"></div>
+    <div class="modal-act">
+      <button class="btn btn-y btn-full" onclick="addMember()">✅ เพิ่ม</button>
+      <button class="btn btn-s" onclick="closeModal('modal-add')">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+<!-- MODAL EDIT MATCH -->
+<div class="overlay" id="modal-edit">
+  <div class="modal">
+    <div class="modal-t">✏️ แก้ไขแมตช์</div>
+    <input type="hidden" id="edit-id">
+    <div class="g2">
+      <div>
+        <div style="color:var(--green);font-size:11px;font-weight:700;margin-bottom:8px;">✅ ฝั่งชนะ</div>
+        <div class="fg"><label class="fl">ผู้เล่น 1</label><select class="fs" id="ew1"></select></div>
+        <div class="fg"><label class="fl">ผู้เล่น 2</label><select class="fs" id="ew2"></select></div>
+      </div>
+      <div>
+        <div style="color:var(--red);font-size:11px;font-weight:700;margin-bottom:8px;">❌ ฝั่งแพ้</div>
+        <div class="fg"><label class="fl">ผู้เล่น 1</label><select class="fs" id="el1"></select></div>
+        <div class="fg"><label class="fl">ผู้เล่น 2</label><select class="fs" id="el2"></select></div>
+      </div>
+    </div>
+    <div class="modal-act">
+      <button class="btn btn-y btn-full" onclick="saveEdit()">✅ บันทึก</button>
+      <button class="btn btn-s" onclick="closeModal('modal-edit')">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="ti">✅</span><span id="tm"></span></div>
+
+<script>
+// ===== STATE =====
+let S = { members:[], matches:[] };
+const COLORS = ['#f0c040','#38bdf8','#22c55e','#f43f5e','#a78bfa','#fb923c','#34d399','#f472b6','#60a5fa','#facc15'];
+const gc = i => COLORS[i%COLORS.length];
+const gi = n => n.charAt(0).toUpperCase();
+const gm = id => S.members.find(m => m.id===id);
+const todayStr = () => new Date().toDateString();
+
+function save(){
+  localStorage.setItem('bcm4',JSON.stringify(S));
+  if(typeof window.fbSave === 'function') window.fbSave(S);
+}
+function load(){ try{ const d=localStorage.getItem('bcm4'); if(d) S=JSON.parse(d); }catch(e){} }
+
+// ===== ELO ENGINE =====
+const BASE = 10000;
+const FLOOR = 8000;
+
+function getElo(id){ const m=gm(id); return m?(m.elo??BASE):BASE; }
+function teamAvgElo(ids){ return ids.reduce((s,id)=>s+getElo(id),0)/ids.length; }
+
+
+  // Farm: count times this winners team played today (not exact pair)
+function getFarmCount(wIds){
+  const ds = todayStr();
+  return S.matches.filter(m => {
+    if(m.dateStr!==ds) return false;
+    const sw = wIds.length===m.winners.length && wIds.every(id=>m.winners.includes(id));
+    return sw;  // ✅ Only check if same winners, not the losers
+  }).length;
+}
+
+// Loss streak: consecutive losses for a player (not counting current match)
+function getLossStreak(id){
+  const myMatches = [...S.matches].filter(m => m.winners.includes(id)||m.losers.includes(id)).reverse();
+  let streak = 0;
+  for(const m of myMatches){
+    if(m.losers.includes(id)) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function computeDeltas(winners, losers, sw, sl){
+  const eloW = teamAvgElo(winners);
+  const eloL = teamAvgElo(losers);
+  const diff = eloW - eloL;
+
+  // 1. Base by tier
+  let wBase, lBase;
+  if(Math.abs(diff)<=1500){ wBase=1000; lBase=-1000; }
+  else if(diff<-1500){ wBase=1200; lBase=-600; }
+  else { wBase=800; lBase=-1200; }
+
+  // 2. Margin
+  let margin = 0;
+  if(sw!==null && sl!==null && (sw-sl)>=9) margin=150;
+
+  // 3. Farm multiplier
+  const fc = getFarmCount(winners,losers);
+  let farmMult = 1.0;
+  if(fc>=4) farmMult=0.20;
+  else if(fc>=3) farmMult=0.5;
+  const farmHit = fc>=3;
+
+  // 4. Anti-Carry per team
+  function antiCarry(ids, base){
+    if(ids.length<2) return ids.map(()=>base);
+    const e0=getElo(ids[0]), e1=getElo(ids[1]);
+    if(Math.abs(e0-e1)<=1500) return [base,base];
+    const hiIdx=e0>e1?0:1, loIdx=1-hiIdx;
+    const r=[base,base];
+    r[hiIdx]=Math.round(base*0.8);
+    r[loIdx]=Math.round(base*1.2);
+    return r;
+  }
+
+  const rawW = wBase+margin;
+  const rawL = lBase-margin;
+  const wCarry = antiCarry(winners, rawW);
+  const lCarry = antiCarry(losers, rawL);
+
+  // 5. Apply farm
+  const wDeltas = wCarry.map(d => Math.round(d*farmMult));
+
+  // 6. Loss streak protection per loser
+  const lDeltas = lCarry.map((d, i) => {
+    const streak = getLossStreak(losers[i]);
+    let v = Math.round(d * farmMult);
+    let streakTag = null;
+    if(streak >= 2){
+      // 3rd loss in a row (current match is 3rd) → freeze
+      if(streak === 2){ v = 0; streakTag = 'freeze'; }
+      // 4th+ loss → 50% of original
+      else { v = Math.round(d * farmMult * 0.5); streakTag = 'half'; }
+    }
+    return { val: v, streakTag };
+  });
+
+  const lDeltaVals = lDeltas.map(x=>x.val);
+  const streakTags = lDeltas.map(x=>x.streakTag);
+  const frozen = lDeltas.some(x=>x.streakTag==='freeze');
+  const halfStreak = lDeltas.some(x=>x.streakTag==='half');
+
+  return { wDeltas, lDeltas: lDeltaVals, streakTags, farmHit, farmMult, margin, diff, frozen, halfStreak };
+}
+
+// ===== RECORD =====
+function recordMatch(){
+  const w1v=document.getElementById('w1').value;
+  const l1v=document.getElementById('l1').value;
+  if(!w1v||!l1v){ toast('กรุณาเลือกผู้เล่นอย่างน้อยฝั่งละ 1 คน','⚠️'); return; }
+  const winners=[parseInt(w1v)];
+  const w2v=document.getElementById('w2').value; if(w2v) winners.push(parseInt(w2v));
+  const losers=[parseInt(l1v)];
+  const l2v=document.getElementById('l2').value; if(l2v) losers.push(parseInt(l2v));
+  if(winners.some(id=>losers.includes(id))){ toast('ผู้เล่นซ้ำกัน','⚠️'); return; }
+
+  const swRaw=document.getElementById('score-w').value;
+  const slRaw=document.getElementById('score-l').value;
+  const sw=swRaw!==''?parseInt(swRaw):null;
+  const sl=slRaw!==''?parseInt(slRaw):null;
+
+  const { wDeltas, lDeltas, streakTags, farmHit, farmMult, margin, diff, frozen, halfStreak } = computeDeltas(winners,losers,sw,sl);
+
+  // Apply to members — winners always reset streak (win resets)
+  winners.forEach((id,i)=>{
+    const m=gm(id); if(!m) return;
+    m.elo=Math.max(FLOOR,(m.elo??BASE)+wDeltas[i]);
+    m.matchCount=(m.matchCount??0)+1;
+    m.wins=(m.wins??0)+1;
+    m.lossStreak=0; // win resets streak
+  });
+  losers.forEach((id,i)=>{
+    const m=gm(id); if(!m) return;
+    m.elo=Math.max(FLOOR,(m.elo??BASE)+lDeltas[i]);
+    m.matchCount=(m.matchCount??0)+1;
+    m.losses=(m.losses??0)+1;
+    m.lossStreak=(m.lossStreak??0)+1;
+  });
+
+  S.matches.push({ id:Date.now(), winners, losers, wDeltas, lDeltas, streakTags, farmHit, farmMult, margin, diff, frozen, halfStreak, sw, sl, dateStr:todayStr(), time:Date.now() });
+  save();
+  ['w1','w2','l1','l2','score-w','score-l'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  renderAll();
+
+  let msg='บันทึกสำเร็จ';
+  if(frozen) msg+=' 🧊 Freeze (streak 3)';
+  else if(halfStreak) msg+=' 🧊 Streak −50%';
+  if(farmHit) msg+=` 🔥 Farm ${Math.round(farmMult*100)}%`;
+  if(margin>0) msg+=' 🎯 Margin';
+  toast(msg, frozen?'🧊':farmHit?'🔥':'✅');
+}
+
+// ===== RENDER =====
+function renderAll(){
+  renderStats(); renderRanking(); renderRecentMatches();
+  renderMemberGrid(); renderSelects(); renderMatchHistory();
+}
+
+function renderStats(){
+  document.getElementById('st-members').textContent=S.members.length;
+  document.getElementById('st-matches').textContent=S.matches.length;
+  document.getElementById('st-today').textContent=S.matches.filter(m=>m.dateStr===todayStr()).length;
+  document.getElementById('st-farm').textContent=S.matches.filter(m=>m.farmHit).length;
+}
+
+function getForm(id){
+  // last 5 matches for this player, newest first
+  return [...S.matches]
+    .filter(m => m.winners.includes(id) || m.losers.includes(id))
+    .reverse()
+    .slice(0, 5);
+}
+
+function renderForm(id){
+  const matches = getForm(id);
+  if(!matches.length) return '<span style="color:var(--muted);font-size:10px;">—</span>';
+  return matches.map(m => {
+    const win = m.winners.includes(id);
+    const frozen = !win && m.streakTags && m.losers.indexOf(id) >= 0 && m.streakTags[m.losers.indexOf(id)] === 'freeze';
+    if(frozen) return `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:4px;font-size:9px;background:rgba(56,189,248,.15);color:var(--blue);font-weight:700;" title="Freeze">🧊</span>`;
+    if(win) return `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:4px;font-size:10px;font-weight:800;background:rgba(34,197,94,.15);color:var(--green);">W</span>`;
+    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:4px;font-size:10px;font-weight:800;background:rgba(244,63,94,.15);color:var(--red);">L</span>`;
+  }).join('<span style="width:3px;display:inline-block;"></span>');
+}
+
+function renderRanking(){
+  const el=document.getElementById('ranking-list');
+  if(!S.members.length){ el.innerHTML='<div class="empty"><div class="empty-i">📊</div><div class="empty-t">เพิ่มสมาชิกและบันทึกผล</div></div>'; return; }
+  const sorted=[...S.members].sort((a,b)=>(b.elo??BASE)-(a.elo??BASE));
+  el.innerHTML=`<table class="rtable"><thead><tr><th>#</th><th>ชื่อ</th><th>คะแนน</th><th>P</th><th>W</th><th>L</th><th>WR%</th><th>Form</th></tr></thead><tbody>
+  ${sorted.map((m,i)=>{
+    const wr=(m.wins||0)+(m.losses||0)>0?Math.round((m.wins||0)/((m.wins||0)+(m.losses||0))*100):0;
+    const rc=i===0?'r1':i===1?'r2':i===2?'r3':'';
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    const idx=S.members.indexOf(m);
+    const streak=m.lossStreak||0;
+    return `<tr>
+      <td><span class="rnk ${rc}">${medal||(i+1)}</span></td>
+      <td><div style="display:flex;align-items:center;gap:8px;">
+        <div class="av" style="width:30px;height:30px;font-size:12px;background:${gc(idx)}">${gi(m.name)}</div>
+        <div><div style="font-size:13px;font-weight:700;">${m.name}${streak>=2?` <span style="font-size:10px;color:var(--blue)">🧊×${streak}</span>`:''}</div>
+        <div class="wr-bar"><div class="wr-fill" style="width:${wr}%"></div></div></div>
+      </div></td>
+      <td><span class="elo-val">${(m.elo??BASE).toLocaleString()}</span></td>
+      <td><span style="font-family:var(--mono);font-size:13px;color:var(--dim)">${m.matchCount||0}</span></td>
+      <td><span class="badge bg-green">${m.wins||0}</span></td>
+      <td><span class="badge bg-red">${m.losses||0}</span></td>
+      <td><span style="font-size:12px;color:var(--dim)">${wr}%</span></td>
+      <td><div style="display:flex;align-items:center;gap:2px;">${renderForm(m.id)}</div></td>
+    </tr>`;
+  }).join('')}</tbody></table>`;
+}
+
+function renderRecentMatches(){
+  const el=document.getElementById('recent-matches');
+  const recent=[...S.matches].reverse().slice(0,8);
+  if(!recent.length){ el.innerHTML='<div class="empty"><div class="empty-i">🎯</div><div class="empty-t">ยังไม่มีการแข่งขัน</div></div>'; return; }
+  el.innerHTML=recent.map(m=>{
+    const wn=m.winners.map(id=>gm(id)?.name||'?').join(' / ');
+    const ln=m.losers.map(id=>gm(id)?.name||'?').join(' / ');
+    const wd=m.wDeltas?.[0]??0, ld=m.lDeltas?.[0]??0;
+    const t=new Date(m.time);
+    const ts=`${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}`;
+    const sc=m.sw!==null?` ${m.sw}–${m.sl}`:'';
+    const cls=m.frozen?'frozen':m.farmHit?'farm':'';
+    return `<div class="mlog ${cls}">
+      <div style="flex:1;min-width:0;">
+        <div class="mlog-w">✅ ${wn}${sc?`<span style="color:var(--muted);font-weight:400"> (${sc})</span>`:''}</div>
+        <div class="mlog-l" style="margin-top:2px;">❌ ${ln}</div>
+        <div style="margin-top:3px;font-size:10px;color:var(--muted);">
+          ${m.frozen?'🧊 Freeze streak 3 &nbsp;':''}
+          ${m.halfStreak?'🧊 Streak −50% &nbsp;':''}
+          ${m.farmHit?`🔥 Farm ${Math.round(m.farmMult*100)}% &nbsp;`:''}
+          ${m.margin?'🎯 Margin ±150 &nbsp;':''}
+          ${ts}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;">
+        <span class="chip chip-up">+${wd.toLocaleString()}</span>
+        <span class="${ld===0?'chip chip-ice':'chip chip-dn'}">${ld===0?'🧊 0':ld.toLocaleString()}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMemberGrid(){
+  const el=document.getElementById('member-grid');
+  if(!S.members.length){ el.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-i">👤</div><div class="empty-t">คลิก "เพิ่มสมาชิก"</div></div>'; return; }
+  el.innerHTML=S.members.map((m,i)=>{
+    const wr=(m.wins||0)+(m.losses||0)>0?Math.round((m.wins||0)/((m.wins||0)+(m.losses||0))*100):0;
+    const streak=m.lossStreak||0;
+    return `<div class="mcard" onclick="confirmDelete(${m.id})">
+      <div class="av" style="width:36px;height:36px;font-size:15px;background:${gc(i)}">${gi(m.name)}</div>
+      <div class="mcard-name">${m.name}${streak>=2?` 🧊`:''}</div>
+      <div class="mcard-elo">${(m.elo??BASE).toLocaleString()}</div>
+      <div class="mcard-sub">${m.wins||0}W ${m.losses||0}L · ${wr}%${streak>0?` · L${streak}`:''}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderSelects(){
+  ['w1','w2','l1','l2','ew1','ew2','el1','el2'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const cur=el.value;
+    el.innerHTML=`<option value="">-- เลือก --</option>`+S.members.map(m=>`<option value="${m.id}">${m.name} (${(m.elo??BASE).toLocaleString()})</option>`).join('');
+    el.value=cur;
+  });
+}
+
+function renderMatchHistory(){
+  const el=document.getElementById('match-history');
+  if(!S.matches.length){ el.innerHTML='<div class="empty"><div class="empty-i">📋</div><div class="empty-t">ยังไม่มีประวัติ</div></div>'; return; }
+  el.innerHTML=[...S.matches].reverse().map(m=>{
+    const t=new Date(m.time);
+    const ts=`${t.getDate()}/${t.getMonth()+1} ${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}`;
+    const sc=m.sw!==null?` ${m.sw}–${m.sl}`:'';
+    const wdStr=m.wDeltas?m.wDeltas.map((d,i)=>`${gm(m.winners[i])?.name||'?'} <span class="chip chip-up">+${d.toLocaleString()}</span>`).join(' '):'';
+    const ldStr=m.lDeltas?m.lDeltas.map((d,i)=>{
+      const tag=m.streakTags?.[i];
+      if(tag==='freeze') return `${gm(m.losers[i])?.name||'?'} <span class="chip chip-ice">🧊 0</span>`;
+      if(tag==='half') return `${gm(m.losers[i])?.name||'?'} <span class="chip chip-dn">${d.toLocaleString()} <span style="opacity:.6">−50%</span></span>`;
+      return `${gm(m.losers[i])?.name||'?'} <span class="chip chip-dn">${d.toLocaleString()}</span>`;
+    }).join(' '):'';
+    const cls=m.frozen?'frozen':m.farmHit?'farm':'';
+    return `<div class="mlog ${cls}">
+      <div style="flex:1;min-width:0;">
+        <div class="mlog-w">✅ ${m.winners.map(id=>gm(id)?.name||'?').join(' / ')}${sc}</div>
+        <div class="mlog-l" style="margin-top:2px;">❌ ${m.losers.map(id=>gm(id)?.name||'?').join(' / ')}</div>
+        <div style="margin-top:5px;font-size:11px;color:var(--dim)">${wdStr} &nbsp; ${ldStr}</div>
+        <div style="margin-top:3px;font-size:10px;color:var(--muted);">
+          ${m.frozen?'🧊 Freeze &nbsp;':''}${m.halfStreak?'🧊 −50% streak &nbsp;':''}${m.farmHit?`🔥 Farm ${Math.round(m.farmMult*100)}% &nbsp;`:''}${m.margin?'🎯 Margin &nbsp;':''}${ts}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-left:8px;">
+        <button class="btn btn-s btn-sm" onclick="openEdit(${m.id})">✏️</button>
+        <button class="btn btn-r btn-sm" onclick="delMatch(${m.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== ACTIONS =====
+function addMember(){
+  const name=document.getElementById('nm-name').value.trim();
+  if(!name){ toast('กรุณากรอกชื่อ','⚠️'); return; }
+  S.members.push({ id:Date.now(), name, phone:document.getElementById('nm-phone').value.trim(), elo:BASE, matchCount:0, wins:0, losses:0, lossStreak:0 });
+  save(); document.getElementById('nm-name').value=''; document.getElementById('nm-phone').value='';
+  closeModal('modal-add'); renderAll(); toast(`เพิ่ม "${name}" สำเร็จ`);
+}
+
+function confirmDelete(id){
+  const m=gm(id);
+  if(confirm(`ลบสมาชิก "${m?.name}"?`)){ S.members=S.members.filter(x=>x.id!==id); save(); renderAll(); toast('ลบแล้ว','🗑️'); }
+}
+
+function randomCourts(){
+  if(S.members.length<2){ toast('ต้องการอย่างน้อย 2 คน','⚠️'); return; }
+  const sh=[...S.members].sort(()=>Math.random()-.5);
+  const courts=[];
+  for(let i=0;i+3<sh.length;i+=4) courts.push({a:[sh[i],sh[i+1]],b:[sh[i+2],sh[i+3]]});
+  if(!courts.length&&sh.length>=2) courts.push({a:[sh[0]],b:[sh[1]]});
+  const el=document.getElementById('court-list');
+  el.innerHTML=`<div class="court-grid">${courts.map((c,ci)=>`
+    <div class="court-card"><div class="court-lbl">🏸 คอร์ท ${ci+1}</div>
+    <div class="vs-wrap">
+      <div class="team-box"><div class="team-p">${c.a.map(p=>`<div>${p.name}</div>`).join('')}</div>
+        <div class="team-elo">${c.a.map(p=>(p.elo??BASE).toLocaleString()).join(' / ')}</div></div>
+      <div class="vs-txt">VS</div>
+      <div class="team-box"><div class="team-p">${c.b.map(p=>`<div>${p.name}</div>`).join('')}</div>
+        <div class="team-elo">${c.b.map(p=>(p.elo??BASE).toLocaleString()).join(' / ')}</div></div>
+    </div></div>`).join('')}</div>`;
+  if(courts[0]){
+    if(courts[0].a[0]) document.getElementById('w1').value=courts[0].a[0].id;
+    if(courts[0].a[1]) document.getElementById('w2').value=courts[0].a[1]?.id||'';
+    if(courts[0].b[0]) document.getElementById('l1').value=courts[0].b[0].id;
+    if(courts[0].b[1]) document.getElementById('l2').value=courts[0].b[1]?.id||'';
+  }
+  toast('สุ่มคอร์ทสำเร็จ 🎲');
+}
+
+function delMatch(id){
+  if(!confirm('ลบแมตช์นี้? (คะแนนจะไม่ถูก revert)')) return;
+  S.matches=S.matches.filter(m=>m.id!==id); save(); renderAll(); toast('ลบแล้ว','🗑️');
+}
+
+function openEdit(id){
+  const match=S.matches.find(m=>m.id===id); if(!match) return;
+  document.getElementById('edit-id').value=id; renderSelects();
+  document.getElementById('ew1').value=match.winners[0]||'';
+  document.getElementById('ew2').value=match.winners[1]||'';
+  document.getElementById('el1').value=match.losers[0]||'';
+  document.getElementById('el2').value=match.losers[1]||'';
+  openModal('modal-edit');
+}
+
+function saveEdit(){
+  const id=parseInt(document.getElementById('edit-id').value);
+  const match=S.matches.find(m=>m.id===id); if(!match) return;
+  const w1v=document.getElementById('ew1').value, l1v=document.getElementById('el1').value;
+  if(!w1v||!l1v){ toast('กรุณาเลือกผู้เล่น','⚠️'); return; }
+  match.winners=[parseInt(w1v)];
+  const w2v=document.getElementById('ew2').value; if(w2v) match.winners.push(parseInt(w2v));
+  match.losers=[parseInt(l1v)];
+  const l2v=document.getElementById('el2').value; if(l2v) match.losers.push(parseInt(l2v));
+  save(); closeModal('modal-edit'); renderAll(); toast('แก้ไขสำเร็จ');
+}
+
+function tab(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('page-'+name).classList.add('on');
+  btn.classList.add('on'); renderAll();
+}
+function openModal(id){ document.getElementById(id).classList.add('on'); }
+function closeModal(id){ document.getElementById(id).classList.remove('on'); }
+function toast(msg,icon='✅'){
+  const t=document.getElementById('toast');
+  document.getElementById('tm').textContent=msg; document.getElementById('ti').textContent=icon;
+  t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),3200);
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.overlay.on').forEach(o=>o.classList.remove('on')); });
+document.querySelectorAll('.overlay').forEach(o=>{ o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('on'); }); });
+
+load(); renderAll();
+</script>
+</body>
+</html>
