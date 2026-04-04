@@ -188,11 +188,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 <!-- DASHBOARD -->
 <div id="page-dashboard" class="page on">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 14px;background:var(--s1);border:1px solid var(--border);border-radius:8px;font-size:13px;">
-    <span id="sync-dot" style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;flex-shrink:0;transition:background .3s,box-shadow .3s;"></span>
-    <span style="color:var(--muted);">🔥 Firebase</span>
-    <span id="sync-time" style="color:var(--dim);margin-left:4px;"></span>
-  </div>
+
   <div class="g4" style="margin-bottom:14px;">
     <div class="scard"><div class="scard-icon">👥</div><div class="scard-val" id="st-members">0</div><div class="scard-lbl">สมาชิก</div></div>
     <div class="scard"><div class="scard-icon">🎯</div><div class="scard-val" id="st-matches">0</div><div class="scard-lbl">แมตช์ทั้งหมด</div></div>
@@ -208,6 +204,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <div class="pt">📋 แมตช์ล่าสุด</div>
       <div id="recent-matches"><div class="empty"><div class="empty-i">🎯</div><div class="empty-t">ยังไม่มีการแข่งขัน</div></div></div>
     </div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 14px;background:var(--s1);border:1px solid var(--border);border-radius:8px;font-size:13px;">
+    <span id="sync-dot" style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;flex-shrink:0;transition:background .3s,box-shadow .3s;"></span>
+    <span style="color:var(--muted);">🔥 Firebase</span>
+    <span id="sync-time" style="color:var(--dim);margin-left:4px;"></span>
+  </div>
+    
   </div>
 </div>
 
