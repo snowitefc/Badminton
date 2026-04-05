@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏸 Badminton Club</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --surface3: #222d42;
+    --accent: #00e5ff;
+    --accent2: #ff6b35;
+    --accent3: #7c3aed;
+    --green: #10b981;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --border: rgba(255,255,255,0.07);
+    --glow: 0 0 20px rgba(0,229,255,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Prompt', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 20% 20%, rgba(0,229,255,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(124,58,237,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,15,30,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 56px;
+  }
+  .nav-logo {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    margin-right: 16px;
+    text-shadow: 0 0 20px rgba(0,229,255,0.5);
+    white-space: nowrap;
+  }
+  .nav-tabs { display: flex; gap: 2px; flex: 1; overflow-x: auto; scrollbar-width: none; }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    font-family: 'Prompt', sans-serif;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .nav-tab:hover { color: var(--text); background: var(--surface2); }
+  .nav-tab.active { color: var(--accent); background: rgba(0,229,255,0.1); }
+
+  /* PAGES */
+  .page { display: none; padding: 20px; max-width: 1000px; margin: 0 auto; position: relative; z-index: 1; }
+  .page.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* STATS GRID */
+  .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+  @media(min-width: 600px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+  .stat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); }
+  .stat-num { font-size: 28px; font-weight: 800; line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* RANKING TABLE */
+  .ranking-table { width: 100%; border-collapse: collapse; }
+  .ranking-table th {
+    text-align: left;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ranking-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .ranking-table tr:last-child td { border-bottom: none; }
+  .ranking-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .rank-badge {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .rank-1 { background: linear-gradient(135deg,#ffd700,#ff8c00); color: #000; }
+  .rank-2 { background: linear-gradient(135deg,#c0c0c0,#808080); color: #000; }
+  .rank-3 { background: linear-gradient(135deg,#cd7f32,#8b4513); color: #fff; }
+  .rank-n { background: var(--surface3); color: var(--muted); }
+  .score-bar-wrap { background: var(--surface3); border-radius: 4px; height: 6px; width: 100px; overflow: hidden; }
+  .score-bar { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent3)); }
+  .player-icon { font-size: 22px; }
+  .win-rate { font-size: 12px; color: var(--muted); }
+
+  /* BUTTONS */
+  .btn {
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #00c8e0; box-shadow: 0 0 20px rgba(0,229,255,0.3); }
+  .btn-danger { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+  .btn-danger:hover { background: rgba(239,68,68,0.25); }
+  .btn-ghost { background: var(--surface3); color: var(--text); }
+  .btn-ghost:hover { background: var(--surface2); }
+  .btn-success { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* FORM */
+  .form-group { margin-bottom: 14px; }
+  .form-label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+  .form-control {
+    width: 100%;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,255,0.1); }
+  .form-control option { background: var(--surface3); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* MATCH FORM */
+  .vs-section { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: start; }
+  .vs-badge {
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    color: #fff;
+    font-weight: 800;
+    font-size: 18px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    text-align: center;
+    margin-top: 24px;
+  }
+  .team-header {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  .team-win { background: rgba(16,185,129,0.15); color: var(--green); }
+  .team-lose { background: rgba(239,68,68,0.15); color: var(--red); }
+
+  /* MATCH HISTORY */
+  .match-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .match-teams { flex: 1; }
+  .match-winners { font-size: 14px; font-weight: 600; color: var(--green); }
+  .match-losers { font-size: 13px; color: var(--muted); }
+  .match-time { font-size: 11px; color: var(--muted); }
+  .match-score { font-size: 22px; font-weight: 800; color: var(--accent); }
+
+  /* RSVP */
+  .rsvp-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .rsvp-chip {
+    padding: 8px 16px;
+    border-radius: 50px;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+  }
+  .rsvp-chip.present { border-color: var(--green); background: rgba(16,185,129,0.1); color: var(--green); }
+  .rsvp-chip.absent { border-color: var(--red); background: rgba(239,68,68,0.08); color: var(--muted); opacity: 0.6; }
+
+  /* COURT */
+  .court-display {
+    background: linear-gradient(135deg, #0d2818, #163d25);
+    border: 2px solid rgba(0,229,255,0.2);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .court-title { font-size: 13px; color: var(--accent); font-weight: 600; margin-bottom: 12px; }
+  .court-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
+  .court-team { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 10px; }
+  .court-team-name { font-size: 15px; font-weight: 600; }
+  .court-vs { font-size: 20px; font-weight: 800; color: var(--accent2); }
+
+  /* FINANCE */
+  .finance-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media(min-width: 600px) { .finance-summary { grid-template-columns: repeat(4, 1fr); } }
+  .session-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .session-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .session-date { font-weight: 600; font-size: 15px; }
+  .session-total { color: var(--accent); font-weight: 700; font-size: 16px; }
+  .payer-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .payer-chip {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 50px;
+    border: 1px solid var(--border);
+    background: var(--surface3);
+  }
+  .payer-chip.paid { border-color: var(--green); color: var(--green); }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+  .modal-close { background: var(--surface3); border: none; color: var(--muted); font-size: 18px; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+  /* NOTIFICATION */
+  .notif {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 14px;
+    z-index: 9999;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    max-width: 300px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .notif.show { transform: translateY(0); opacity: 1; }
+  .notif.success { border-color: rgba(16,185,129,0.3); }
+  .notif.error { border-color: rgba(239,68,68,0.3); }
+
+  /* ICON PICKER */
+  .icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; margin: 12px 0; }
+  .icon-opt {
+    font-size: 22px;
+    text-align: center;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .icon-opt:hover, .icon-opt.selected { border-color: var(--accent); background: rgba(0,229,255,0.1); }
+
+  /* PLAYER DETAIL */
+  .player-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .player-stat { background: var(--surface2); border-radius: 10px; padding: 12px; text-align: center; }
+  .player-stat-num { font-size: 22px; font-weight: 800; }
+  .player-stat-label { font-size: 11px; color: var(--muted); }
+  .hth-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+
+  /* RULES */
+  .rule-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .rule-box { background: var(--surface2); border-radius: 10px; padding: 14px; }
+  .rule-box-title { font-size: 11px; color: var(--muted); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; }
+  .rule-item { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+  .rule-val { font-weight: 600; }
+  .rule-val.pos { color: var(--green); }
+  .rule-val.neg { color: var(--red); }
+
+  .section-btn-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state .empty-text { font-size: 15px; }
+
+  .progress-ring { display: inline-block; }
+  .delta { font-size: 12px; font-weight: 600; padding: 2px 6px; border-radius: 6px; }
+  .delta.up { color: var(--green); background: rgba(16,185,129,0.1); }
+  .delta.down { color: var(--red); background: rgba(239,68,68,0.1); }
+
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 500; }
+  .tag-cyan { background: rgba(0,229,255,0.1); color: var(--accent); }
+  .tag-orange { background: rgba(255,107,53,0.1); color: var(--accent2); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">🏸 SwFC</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dashboard')">📊 Dashboard</button>
+    <button class="nav-tab" onclick="showPage('members')">👥 ก๊วน</button>
+    <button class="nav-tab" onclick="showPage('match')">🎯 บันทึกผล</button>
+    <button class="nav-tab" onclick="showPage('history')">📜 ประวัติ</button>
+    <button class="nav-tab" onclick="showPage('finance')">💰 การเงิน</button>
+    <button class="nav-tab" onclick="showPage('rules')">📋 กติกา</button>
+  </div>
+</nav>
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page active">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-num" id="stat-members" style="color:var(--accent)">0</div>
+      <div class="stat-label">👥 สมาชิก</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-matches" style="color:var(--accent2)">0</div>
+      <div class="stat-label">🎯 แมตช์ทั้งหมด</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-today" style="color:var(--green)">0</div>
+      <div class="stat-label">📅 แมตช์วันนี้</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-farm" style="color:var(--red)">0</div>
+      <div class="stat-label">🔥 Farm blocked</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🌍 World Ranking</div>
+    <div id="ranking-body">
+      <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">เพิ่มสมาชิกและบันทึกผลเพื่อดู ranking</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 แมตช์ล่าสุด</div>
+    <div id="recent-matches">
+      <div class="empty-state"><div class="empty-icon">🎯</div><div class="empty-text">ยังไม่มีการแข่งขัน</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MEMBERS -->
+<div id="page-members" class="page">
+  <div class="section-btn-row">
+    <button class="btn btn-primary" onclick="openModal('modal-add-member')">➕ เพิ่มสมาชิก</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 ลงชื่อใครมา session นี้ / คนที่ไม่มา decay อัตโนมัติ</div>
+    <div class="rsvp-grid" id="rsvp-grid">
+      <div style="color:var(--muted);font-size:13px">เพิ่มสมาชิกก่อนนะ</div>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="card-title">🎯 จัดคอร์ท</div>
+    <button class="btn btn-primary" onclick="randomCourt()" style="margin-bottom:16px">🎲 จัดคู่สูสี</button>
+    <div id="court-display">
+      <div class="empty-state"><div class="empty-icon">🏸</div><div class="empty-text">กด "สุ่มจัดคอร์ท"</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">👥 สมาชิกทั้งหมด</div>
+    <div id="members-list">
+      <div class="empty-state"><div class="empty-icon">👤</div><div class="empty-text">คลิก "เพิ่มสมาชิก"</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MATCH -->
+<div id="page-match" class="page">
+  <div class="card">
+    <div class="card-title">📝 บันทึกผลการแข่งขัน</div>
+    <div class="vs-section">
+      <div>
+        <div class="team-header team-win">✅ ฝั่งชนะ</div>
+        <div class="form-group">
+          <label class="form-label">ผู้เล่น 1</label>
+          <select class="form-control" id="win1"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ผู้เล่น 2 (คู่)</label>
+          <select class="form-control" id="win2"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">คะแนน</label>
+          <input type="number" class="form-control" id="win-score" placeholder="21" min="15" max="30" style="font-size:40px;font-weight:800;text-align:center;padding:14px;height:100px;color:var(--green);letter-spacing:2px">
+        </div>
+      </div>
+      <div class="vs-badge">VS</div>
+      <div>
+        <div class="team-header team-lose">❌ ฝั่งแพ้</div>
+        <div class="form-group">
+          <label class="form-label">ผู้เล่น 1</label>
+          <select class="form-control" id="lose1"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ผู้เล่น 2 (คู่)</label>
+          <select class="form-control" id="lose2"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">คะแนน</label>
+          <input type="number" class="form-control" id="lose-score" placeholder=".." min="1" max="30" style="font-size:40px;font-weight:800;text-align:center;padding:14px;height:100px;color:var(--red);letter-spacing:2px">
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="recordMatch()" style="width:100%;justify-content:center;margin-top:8px">✅ บันทึกผลการแข่งขัน</button>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div id="page-history" class="page">
+  
+  <div id="history-list">
+    <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">ยังไม่มีประวัติ</div></div>
+  </div>
+
+<div class="section-btn-row">
+    <button class="btn btn-danger btn-sm" onclick="clearAll()">🗑️ ล้างข้อมูลทั้งหมด</button>
+  </div>
+</div>
+
+<!-- FINANCE -->
+<div id="page-finance" class="page">
+  <div class="section-btn-row">
+    <button class="btn btn-primary" onclick="openModal('modal-finance')">➕ บันทึกค่าใช้จ่าย</button>
+  </div>
+  <div class="finance-summary" style="margin-bottom:16px">
+    <div class="stat-card"><div class="stat-num" id="fin-sessions" style="color:var(--accent)">0</div><div class="stat-label">🏸 เซสชัน</div></div>
+    <div class="stat-card"><div class="stat-num" id="fin-total" style="color:var(--green)">0</div><div class="stat-label">💵 รวม (บาท)</div></div>
+    <div class="stat-card"><div class="stat-num" id="fin-avg" style="color:var(--accent2)">0</div><div class="stat-label">👥 เฉลี่ย/คน</div></div>
+    <div class="stat-card"><div class="stat-num" id="fin-rate" style="color:var(--yellow)">0</div><div class="stat-label">🕒 บาท/ชม.</div></div>
+  </div>
+  <div id="finance-list">
+    <div class="empty-state"><div class="empty-icon">💰</div><div class="empty-text">ยังไม่มีรายการ</div></div>
+  </div>
+</div>
+
+<!-- RULES -->
+<div id="page-rules" class="page">
+  <div class="card">
+    <div class="card-title">📋 กติการะบบคะแนน</div>
+    <div class="rule-row">
+      <div class="rule-box">
+        <div class="rule-box-title">⚡ ตั้งต้น</div>
+        <div class="rule-item"><span>เริ่มต้น</span><span class="rule-val">10,000</span></div>
+      </div>
+      <div class="rule-box">
+        <div class="rule-box-title">🟰 สูสี ( Δ ≤ 1,500)</div>
+        <div class="rule-item"><span>ชนะ</span><span class="rule-val pos">+1,000</span></div>
+        <div class="rule-item"><span>แพ้</span><span class="rule-val neg">−1,000</span></div>
+      </div>
+      <div class="rule-box">
+        <div class="rule-box-title">⬆️ เจอทีมเก่งกว่า</div>
+        <div class="rule-item"><span>ทีมอ่อนชนะ</span><span class="rule-val pos">+1,200</span></div>
+        <div class="rule-item"><span>ทีมเก่งแพ้</span><span class="rule-val neg">−1,000</span></div>
+      </div>
+    </div>
+    <div class="rule-row">
+      <div class="rule-box">
+        <div class="rule-box-title">⬇️ เจอทีมอ่อนกว่า</div>
+        <div class="rule-item"><span>ทีมเก่งชนะ</span><span class="rule-val pos">+800</span></div>
+        <div class="rule-item"><span>ทีมอ่อนแพ้</span><span class="rule-val neg">−800</span></div>
+      </div>
+      <div class="rule-box">
+        <div class="rule-box-title">🎯 Margin (≥9)</div>
+        <div class="rule-item"><span>ชนะ bonus</span><span class="rule-val pos">+200</span></div>
+        <div class="rule-item"><span>แพ้ penalty</span><span class="rule-val neg">−200</span></div>
+      </div>
+      <div class="rule-box">
+        <div class="rule-box-title">🛡️ Safety Cap</div>
+        <div class="rule-item"><span>เสียสูงสุด/วัน</span><span class="rule-val neg">−3,000</span></div>
+      </div>
+    </div>
+    <div class="rule-row">
+      <div class="rule-box">
+        <div class="rule-box-title">🔥 Anti-Farm</div>
+        <div class="rule-item"><span>เกม 1-2</span><span class="rule-val">100%</span></div>
+        <div class="rule-item"><span>เกม 3+</span><span class="rule-val neg">50%</span></div>
+      </div>
+      <div class="rule-box">
+        <div class="rule-box-title">🧊 Decay (Auto)</div>
+        <div class="rule-item"><span>ต่อวัน</span><span class="rule-val neg">−300</span></div>
+        <div class="rule-item"><span>รีเซ็ตเมื่อมา</span><span class="rule-val">✅</span></div>
+      </div>
+      <div class="rule-box">
+        <div class="rule-box-title">🧊 Losing Streak</div>
+        <div class="rule-item"><span>แพ้ 1-2 ครั้งติด</span><span class="rule-val">ปกติ</span></div>
+        <div class="rule-item"><span>แพ้ครั้งที่ 3</span><span class="rule-val">🧊 Freeze</span></div>
+        <div class="rule-item"><span>แพ้ครั้งที่ 4+</span><span class="rule-val neg">−50%</span></div>
+      </div>
+    </div>
+    <div class="rule-box" style="margin-top:4px">
+      <div class="rule-box-title">🤝 Anti-Carry (ต่างในทีม >1,500)</div>
+      <div style="display:flex;gap:24px">
+        <div class="rule-item"><span>คนคะแนนสูง</span><span class="rule-val neg" style="margin-left:12px">×0.8</span></div>
+        <div class="rule-item"><span>คนคะแนนต่ำ</span><span class="rule-val pos" style="margin-left:12px">×1.2</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER DETAIL MODAL -->
+<div class="modal-overlay" id="modal-player">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modal-player-name">ผู้เล่น</span>
+      <button class="modal-close" onclick="closeModal('modal-player')">✕</button>
+    </div>
+    <div style="text-align:center;margin-bottom:16px">
+      <div id="modal-player-icon" style="font-size:52px"></div>
+      <button class="btn btn-ghost btn-sm" onclick="openIconPicker()" style="margin-top:8px">🎨 เปลี่ยน icon</button>
+    </div>
+    <div class="player-stats-grid">
+      <div class="player-stat"><div class="player-stat-num" id="mp-wins" style="color:var(--green)">0</div><div class="player-stat-label">✅ ชนะ</div></div>
+      <div class="player-stat"><div class="player-stat-num" id="mp-losses" style="color:var(--red)">0</div><div class="player-stat-label">❌ แพ้</div></div>
+      <div class="player-stat"><div class="player-stat-num" id="mp-wr" style="color:var(--accent)">0%</div><div class="player-stat-label">📊 Win Rate</div></div>
+    </div>
+    <div class="player-stat" style="text-align:center;margin-bottom:16px">
+      <div class="player-stat-num" id="mp-score" style="color:var(--accent2)">10,000</div>
+      <div class="player-stat-label">🏆 คะแนน</div>
+    </div>
+    <div class="card-title">🏆 Head-to-Head</div>
+    <div id="mp-hth" style="margin-bottom:16px"></div>
+    <div class="card-title">📋 เกมล่าสุด</div>
+    <div id="mp-recent"></div>
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="editMember()">✏️ แก้ไข</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteMember()">🗑️ ลบ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ICON PICKER MODAL -->
+<div class="modal-overlay" id="modal-icons">
+  <div class="modal">
+    <div class="modal-title">
+      🎨 เลือก Icon <button class="modal-close" onclick="closeModal('modal-icons')">✕</button>
+    </div>
+    <div id="icon-grid-container"></div>
+    <button class="btn btn-primary" onclick="saveIcon()" style="width:100%;justify-content:center;margin-top:12px">✅ ใช้ icon นี้</button>
+  </div>
+</div>
+
+<!-- ADD MEMBER MODAL -->
+<div class="modal-overlay" id="modal-add-member">
+  <div class="modal">
+    <div class="modal-title">➕ เพิ่มสมาชิก <button class="modal-close" onclick="closeModal('modal-add-member')">✕</button></div>
+    <div class="form-group">
+      <label class="form-label">ชื่อ *</label>
+      <input type="text" class="form-control" id="add-name" placeholder="ชื่อสมาชิก">
+    </div>
+    <div class="form-group">
+      <label class="form-label">เบอร์โทร (ไม่บังคับ)</label>
+      <input type="tel" class="form-control" id="add-phone" placeholder="0812345678">
+    </div>
+    <button class="btn btn-primary" onclick="addMember()" style="width:100%;justify-content:center">✅ เพิ่ม</button>
+  </div>
+</div>
+
+<!-- EDIT MEMBER MODAL -->
+<div class="modal-overlay" id="modal-edit-member">
+  <div class="modal">
+    <div class="modal-title">✏️ แก้ไขสมาชิก <button class="modal-close" onclick="closeModal('modal-edit-member')">✕</button></div>
+    <div class="form-group">
+      <label class="form-label">ชื่อ *</label>
+      <input type="text" class="form-control" id="edit-name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">เบอร์โทร</label>
+      <input type="tel" class="form-control" id="edit-phone">
+    </div>
+    <button class="btn btn-primary" onclick="saveMember()" style="width:100%;justify-content:center">✅ บันทึก</button>
+  </div>
+</div>
+
+<!-- FINANCE MODAL -->
+<div class="modal-overlay" id="modal-finance">
+  <div class="modal">
+    <div class="modal-title">💰 บันทึกค่าใช้จ่าย <button class="modal-close" onclick="closeModal('modal-finance')">✕</button></div>
+    <div class="form-group">
+      <label class="form-label">วันที่</label>
+      <input type="date" class="form-control" id="fin-date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">ผู้จอง / ผู้จ่าย</label>
+      <input type="text" class="form-control" id="fin-payer" placeholder="ชื่อผู้จ่ายเงิน">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">จำนวนชั่วโมง</label>
+        <input type="number" class="form-control" id="fin-hours" placeholder="2" min="1" value="2" oninput="calcFin()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ราคา/ชม. (บาท)</label>
+        <input type="number" class="form-control" id="fin-rate-input" placeholder="200" value="200" oninput="calcFin()">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ค่าลูกแบด (บาท)</label>
+      <input type="number" class="form-control" id="fin-shuttle" placeholder="0" value="0" oninput="calcFin()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">จำนวนคน</label>
+      <input type="number" class="form-control" id="fin-people" placeholder="4" value="4" oninput="calcFin()">
+    </div>
+    <div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px">
+        <span style="color:var(--muted)">รวมทั้งหมด</span><span id="fin-total-calc" style="color:var(--accent);font-weight:700">0 บาท</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:14px">
+        <span style="color:var(--muted)">เก็บคนละ</span><span id="fin-each-calc" style="color:var(--green);font-weight:700">0 บาท</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">โน้ต</label>
+      <input type="text" class="form-control" id="fin-note" placeholder="หมายเหตุเพิ่มเติม">
+    </div>
+    <button class="btn btn-primary" onclick="saveFinance()" style="width:100%;justify-content:center">✅ บันทึก</button>
+  </div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif">
+  <span id="notif-icon">✅</span>
+  <span id="notif-msg">บันทึกแล้ว</span>
+</div>
+
+<script>
+// =========== STATE ===========
+let state = {
+  members: [],
+  matches: [],
+  finances: [],
+  rsvp: {}
+};
+let currentPlayerIdx = null;
+let tempIcon = null;
+const ICONS = ['👤','🧑','👨','👩','🧔','👨‍🦰','👩‍🦰','🧑‍🦱','👨‍🦱','👩‍🦱','🥷','🧙','🦸','🦹','🧌','🐉','🦊','🐼','🐸','🦁','🎭','🤡','🤖','👽','👾','🎃','🏆','⚡','🔥','💥','🌟','🎯','🏸','🎪','🚀','💎','🌈','🎨'];
+
+// =========== PERSISTENCE ===========
+// save() และ load() ถูกแทนที่ด้วย Firebase ด้านล่าง
+// แต่ทิ้ง stub ไว้กันเกิด error ก่อน Firebase โหลดเสร็จ
+function save() {}
+function load() {}
+
+// =========== INIT ===========
+// Firebase onSnapshot จะเรียก refreshAll() เองหลังโหลดข้อมูล
+// แต่เรียก autoDecayIfNeeded และ initFinDate ไว้ก่อนได้เลย
+autoDecayIfNeeded();
+initFinDate();
+
+function initFinDate() {
+  const d = new Date().toISOString().split('T')[0];
+  document.getElementById('fin-date').value = d;
+}
+
+function refreshAll() {
+  renderRanking();
+  renderRecentMatches();
+  renderMembers();
+  renderRSVP();
+  renderMatchSelects();
+  renderHistory();
+  renderFinance();
+  updateStats();
+}
+
+// =========== NAV ===========
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  const tabs = ['dashboard','members','match','history','finance','rules'];
+  document.querySelectorAll('.nav-tab')[tabs.indexOf(p)].classList.add('active');
+  if(p==='match') renderMatchSelects();
+}
+
+// =========== MODAL ===========
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// =========== NOTIFY ===========
+function notify(msg, type='success') {
+  const n = document.getElementById('notif');
+  document.getElementById('notif-msg').textContent = msg;
+  document.getElementById('notif-icon').textContent = type === 'success' ? '✅' : '❌';
+  n.className = 'notif show ' + type;
+  setTimeout(() => n.classList.remove('show'), 2800);
+}
+
+// =========== SCORING ===========
+function calcTeamScore(ids) {
+  return ids.filter(x=>x).reduce((s,id) => s + (getMember(id)?.score ?? 10000), 0) / ids.filter(x=>x).length;
+}
+
+function calcPoints(winIds, loseIds, winScore, loseScore) {
+  const wTeam = calcTeamScore(winIds);
+  const lTeam = calcTeamScore(loseIds);
+  const diff = wTeam - lTeam;
+  let wGain, lLoss;
+  if (Math.abs(diff) <= 1500) { wGain = 1000; lLoss = 1000; }
+  else if (diff < -1500) { wGain = 1200; lLoss = 1000; } // winners weaker (stronger opponent)
+  else { wGain = 800; lLoss = 800; } // winners stronger (weaker opponent)
+
+  const margin = winScore && loseScore ? Math.abs(winScore - loseScore) : 0;
+  const marginBonus = margin >= 9 ? 200 : 0;
+  wGain += marginBonus;
+  lLoss += marginBonus;
+
+  // anti-carry
+  const applyAntiCarry = (ids, pts, isWin) => {
+    const active = ids.filter(x=>x);
+    if (active.length < 2) return ids.map(() => pts);
+    const scores = active.map(id => getMember(id)?.score ?? 10000);
+    if (Math.abs(scores[0] - scores[1]) > 1500) {
+      const highIdx = scores[0] > scores[1] ? 0 : 1;
+      let ai = 0;
+      return ids.map(id => {
+        if (!id) return pts;
+        const r = ai === highIdx ? Math.round(pts * 0.8) : Math.round(pts * 1.2);
+        ai++; return r;
+      });
+    }
+    return ids.map(() => pts);
+  };
+
+  return {
+    wPts: applyAntiCarry(winIds, wGain, true),
+    lPts: applyAntiCarry(loseIds, lLoss, false)
+  };
+}
+
+function getTodayGameCount(ids) {
+  const today = new Date().toDateString();
+  const teamKey = ids.filter(x=>x).sort().join(',');
+  return state.matches.filter(m => {
+    const mDate = new Date(m.time).toDateString();
+    const mKey = [...m.winIds, ...m.loseIds].filter(x=>x).sort().join(',');
+    // check if same pair played today
+    return mDate === today && (m.winIds.filter(x=>x).sort().join(',') === teamKey || m.loseIds.filter(x=>x).sort().join(',') === teamKey);
+  }).length;
+}
+
+function getLoseStreak(id) {
+  let streak = 0;
+  for (let i = state.matches.length - 1; i >= 0; i--) {
+    const m = state.matches[i];
+    if (m.loseIds.includes(id)) streak++;
+    else if (m.winIds.includes(id)) break;
+  }
+  return streak;
+}
+
+// =========== MEMBERS ===========
+function getMember(id) { return state.members.find(m => m.id === id); }
+
+function addMember() {
+  const name = document.getElementById('add-name').value.trim();
+  if (!name) { notify('กรุณาใส่ชื่อ', 'error'); return; }
+  const m = { id: Date.now().toString(), name, phone: document.getElementById('add-phone').value.trim(), icon: '👤', score: 10000, wins: 0, losses: 0, decayCount: 0 };
+  state.members.push(m);
+  state.rsvp[m.id] = false;
+  save();
+  closeModal('modal-add-member');
+  document.getElementById('add-name').value = '';
+  document.getElementById('add-phone').value = '';
+  refreshAll();
+  notify('เพิ่ม ' + name + ' แล้ว ✅');
+}
+
+function renderMembers() {
+  const el = document.getElementById('members-list');
+  if (!state.members.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-text">คลิก "เพิ่มสมาชิก"</div></div>'; return; }
+  el.innerHTML = state.members.map((m,i) => `
+    <div class="match-item" onclick="openPlayer(${i})" style="cursor:pointer">
+      <div style="font-size:32px">${m.icon}</div>
+      <div class="match-teams">
+        <div style="font-weight:600;font-size:15px">${m.name}</div>
+        <div class="match-losers">${m.phone || ''}</div>
+        <div style="margin-top:4px"><span class="delta up">W:${m.wins}</span> <span class="delta down">L:${m.losses}</span></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:18px;font-weight:800;color:var(--accent)">${m.score.toLocaleString()}</div>
+        <div style="font-size:11px;color:var(--muted)">pts</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// =========== PLAYER MODAL ===========
+function openPlayer(idx) {
+  currentPlayerIdx = idx;
+  const m = state.members[idx];
+  document.getElementById('modal-player-name').textContent = m.name;
+  document.getElementById('modal-player-icon').textContent = m.icon;
+  document.getElementById('mp-wins').textContent = m.wins;
+  document.getElementById('mp-losses').textContent = m.losses;
+  const wr = m.wins + m.losses > 0 ? Math.round(m.wins / (m.wins + m.losses) * 100) : 0;
+  document.getElementById('mp-wr').textContent = wr + '%';
+  document.getElementById('mp-score').textContent = m.score.toLocaleString();
+
+  // HTH
+  const hth = {};
+  state.matches.forEach(match => {
+    const inWin = match.winIds.includes(m.id);
+    const inLose = match.loseIds.includes(m.id);
+    if (!inWin && !inLose) return;
+    const opp = inWin ? match.loseIds : match.winIds;
+    opp.filter(x=>x).forEach(oid => {
+      if (!hth[oid]) hth[oid] = {w:0,l:0};
+      if (inWin) hth[oid].w++; else hth[oid].l++;
+    });
+  });
+  const hthEl = document.getElementById('mp-hth');
+  const keys = Object.keys(hth);
+  if (!keys.length) { hthEl.innerHTML = '<div style="color:var(--muted);font-size:13px">ยังไม่มีข้อมูล</div>'; }
+  else {
+    hthEl.innerHTML = keys.map(id => {
+      const om = getMember(id);
+      if (!om) return '';
+      const h = hth[id];
+      return `<div class="hth-item"><span>${om.icon} ${om.name}</span><span><span class="delta up">${h.w}W</span> <span class="delta down">${h.l}L</span></span></div>`;
+    }).join('');
+  }
+
+  // Recent
+  const recent = state.matches.filter(ma => ma.winIds.includes(m.id) || ma.loseIds.includes(m.id)).slice(-5).reverse();
+  const recEl = document.getElementById('mp-recent');
+  if (!recent.length) { recEl.innerHTML = '<div style="color:var(--muted);font-size:13px">ยังไม่มี</div>'; }
+  else {
+    recEl.innerHTML = recent.map(ma => {
+      const won = ma.winIds.includes(m.id);
+      const opp = won ? ma.loseIds : ma.winIds;
+      const oppNames = opp.filter(x=>x).map(id => getMember(id)?.name || '?').join(' & ');
+      return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+        <span>${won ? '✅' : '❌'} vs ${oppNames}</span>
+        <span style="color:var(--muted)">${new Date(ma.time).toLocaleDateString('th')}</span>
+      </div>`;
+    }).join('');
+  }
+
+  openModal('modal-player');
+}
+
+function openIconPicker() {
+  const grid = document.getElementById('icon-grid-container');
+  tempIcon = state.members[currentPlayerIdx]?.icon;
+  grid.innerHTML = `<div class="icon-grid">${ICONS.map(ic => `<div class="icon-opt${ic===tempIcon?' selected':''}" onclick="selectIcon('${ic}')">${ic}</div>`).join('')}</div>`;
+  closeModal('modal-player');
+  openModal('modal-icons');
+}
+
+function selectIcon(ic) {
+  tempIcon = ic;
+  document.querySelectorAll('.icon-opt').forEach(el => el.classList.toggle('selected', el.textContent === ic));
+}
+
+function saveIcon() {
+  if (currentPlayerIdx !== null && tempIcon) {
+    state.members[currentPlayerIdx].icon = tempIcon;
+    save();
+    closeModal('modal-icons');
+    openPlayer(currentPlayerIdx);
+    renderMembers();
+    renderRanking();
+  }
+}
+
+function editMember() {
+  const m = state.members[currentPlayerIdx];
+  document.getElementById('edit-name').value = m.name;
+  document.getElementById('edit-phone').value = m.phone || '';
+  closeModal('modal-player');
+  openModal('modal-edit-member');
+}
+
+function saveMember() {
+  const name = document.getElementById('edit-name').value.trim();
+  if (!name) { notify('กรุณาใส่ชื่อ', 'error'); return; }
+  state.members[currentPlayerIdx].name = name;
+  state.members[currentPlayerIdx].phone = document.getElementById('edit-phone').value.trim();
+  save();
+  closeModal('modal-edit-member');
+  refreshAll();
+  notify('แก้ไขแล้ว');
+}
+
+function deleteMember() {
+  if (!confirm('ลบ ' + state.members[currentPlayerIdx].name + ' ?')) return;
+  const id = state.members[currentPlayerIdx].id;
+  state.members.splice(currentPlayerIdx, 1);
+  delete state.rsvp[id];
+  save();
+  closeModal('modal-player');
+  refreshAll();
+  notify('ลบแล้ว');
+}
+
+// =========== RSVP ===========
+function renderRSVP() {
+  const el = document.getElementById('rsvp-grid');
+  if (!state.members.length) { el.innerHTML = '<div style="color:var(--muted);font-size:13px">เพิ่มสมาชิกก่อนนะ</div>'; return; }
+  el.innerHTML = state.members.map(m => {
+    const status = state.rsvp[m.id];
+    return `<div class="rsvp-chip ${status?'present':'absent'}" onclick="toggleRSVP('${m.id}')">
+      ${m.icon} ${m.name} ${status?'✅':''}
+    </div>`;
+  }).join('');
+}
+
+function toggleRSVP(id) {
+  state.rsvp[id] = !state.rsvp[id];
+  save();
+  renderRSVP();
+}
+
+function decayAbsent() {
+  const today = new Date().toDateString();
+  let count = 0;
+  state.members.forEach(m => {
+    if (!state.rsvp[m.id]) {
+      // only decay once per day per player
+      if (m.lastDecayDate !== today) {
+        m.score = Math.max(0, m.score - 300);
+        m.lastDecayDate = today;
+        count++;
+      }
+    }
+  });
+  save();
+  refreshAll();
+  notify(count > 0 ? `Decay ${count} คน (-300 แต่ละคน) 🧊` : 'ทุกคน decay แล้ววันนี้');
+}
+
+function autoDecayIfNeeded() {
+  const today = new Date().toDateString();
+  if (state.lastAutoDecay === today) return;
+  // Only decay on days that have at least one match
+  const hasMatchToday = state.matches.some(m => new Date(m.time).toDateString() === today);
+  if (!hasMatchToday) return;
+  state.lastAutoDecay = today;
+  state.members.forEach(m => {
+    if (!state.rsvp[m.id] && m.lastDecayDate !== today) {
+      m.score = Math.max(0, m.score - 300);
+      m.lastDecayDate = today;
+    }
+  });
+  save();
+}
+
+// =========== COURT ===========
+function teamAvg(players) {
+  return players.reduce((s, p) => s + (p.score || 10000), 0) / players.length;
+}
+
+function bestCourtCombo(players) {
+  // Try all combinations to find pairing with smallest team gap
+  // For 4 players: pick best split into 2 teams of 2
+  if (players.length < 4) return null;
+  const [a, b, c, d] = players;
+  const combos = [
+    { a: [a, b], b: [c, d] },
+    { a: [a, c], b: [b, d] },
+    { a: [a, d], b: [b, c] },
+  ];
+  return combos.reduce((best, cur) => {
+    const gap = Math.abs(teamAvg(cur.a) - teamAvg(cur.b));
+    const bestGap = Math.abs(teamAvg(best.a) - teamAvg(best.b));
+    return gap < bestGap ? cur : best;
+  });
+}
+
+function randomCourt() {
+  const present = state.members.filter(m => state.rsvp[m.id]);
+  if (present.length < 4) { notify('ต้องมีคนมาอย่างน้อย 4 คน', 'error'); return; }
+
+  // Shuffle first for variety, then find best combo per court
+  const shuffled = [...present].sort(() => Math.random() - 0.5);
+  const courts = [];
+  for (let i = 0; i + 3 < shuffled.length; i += 4) {
+    const group = shuffled.slice(i, i + 4);
+    const best = bestCourtCombo(group);
+    const gap = Math.abs(teamAvg(best.a) - teamAvg(best.b));
+    courts.push({ ...best, gap });
+  }
+
+  const el = document.getElementById('court-display');
+  el.innerHTML = courts.map((c, ci) => {
+    const isUneven = c.gap > 1500;
+    const avgA = Math.round(teamAvg(c.a));
+    const avgB = Math.round(teamAvg(c.b));
+    return `
+    <div class="court-display" style="margin-bottom:12px;${isUneven ? 'border-color:rgba(245,158,11,0.5);' : ''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="court-title" style="margin-bottom:0">คอร์ท ${ci+1}</div>
+        ${isUneven
+          ? `<span style="font-size:12px;color:var(--yellow);background:rgba(245,158,11,0.1);padding:2px 10px;border-radius:20px;border:1px solid rgba(245,158,11,0.3)">⚠️ ต่างกัน ${Math.round(c.gap).toLocaleString()} pts</span>`
+          : `<span style="font-size:12px;color:var(--green);background:rgba(16,185,129,0.1);padding:3px 10px;border-radius:20px;border:1px solid rgba(16,185,129,0.2)">✅ สูสี ${Math.round(c.gap).toLocaleString()} pts</span>`
+        }
+      </div>
+      <div class="court-teams">
+        <div class="court-team">
+          ${c.a.map(p => `<div>${p.icon} ${p.name}<span style="font-size:11px;color:var(--muted);margin-left:6px">${(p.score||10000).toLocaleString()}</span></div>`).join('<div style="height:6px"></div>')}
+          <div style="margin-top:6px;font-size:12px;color:var(--accent)">avg ${avgA.toLocaleString()}</div>
+        </div>
+        <div class="court-vs">VS</div>
+        <div class="court-team">
+          ${c.b.map(p => `<div>${p.icon} ${p.name}<span style="font-size:11px;color:var(--muted);margin-left:6px">${(p.score||10000).toLocaleString()}</span></div>`).join('<div style="height:6px"></div>')}
+          <div style="margin-top:6px;font-size:12px;color:var(--accent)">avg ${avgB.toLocaleString()}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// =========== MATCH ===========
+function renderMatchSelects() {
+  const opts = ['<option value="">-- เลือก --</option>',
+    ...state.members.map(m => `<option value="${m.id}">${m.icon} ${m.name}</option>`)].join('');
+  ['win1','win2','lose1','lose2'].forEach(id => {
+    document.getElementById(id).innerHTML = opts;
+  });
+}
+
+function recordMatch() {
+  const w1 = document.getElementById('win1').value;
+  const w2 = document.getElementById('win2').value;
+  const l1 = document.getElementById('lose1').value;
+  const l2 = document.getElementById('lose2').value;
+  const ws = parseInt(document.getElementById('win-score').value) || 0;
+  const ls = parseInt(document.getElementById('lose-score').value) || 0;
+
+  if (!w1 || !l1) { notify('เลือกผู้เล่นอย่างน้อยฝ่ายละ 1 คน', 'error'); return; }
+  const allPick = [w1,w2,l1,l2].filter(x=>x);
+  const unique = new Set(allPick);
+  if (unique.size !== allPick.length) { notify('ผู้เล่นซ้ำกัน!', 'error'); return; }
+
+  const winIds = [w1, w2 || null];
+  const loseIds = [l1, l2 || null];
+
+  const { wPts, lPts } = calcPoints(winIds, loseIds, ws, ls);
+
+  // Capture pre-match team averages for matchType BEFORE any score changes
+  const wTeamAvgPre = calcTeamScore(winIds);
+  const lTeamAvgPre = calcTeamScore(loseIds);
+  const diffPre = wTeamAvgPre - lTeamAvgPre;
+  const matchType = Math.abs(diffPre) <= 1500 ? 'even' : diffPre < -1500 ? 'upset' : 'favor';
+  const margin = ws && ls ? Math.abs(ws - ls) : 0;
+  const hasMargin = margin >= 9;
+
+  // anti-farm
+  const wFarmCount = getTodayGameCount([w1, w2]);
+  const farmMult = wFarmCount >= 2 ? 0.5 : 1;
+
+  winIds.forEach((id, i) => {
+    if (!id) return;
+    const m = getMember(id);
+    m.score += Math.round(wPts[i] * farmMult);
+    m.wins++;
+    m.loseStreak = 0;
+  });
+
+  const appliedLPts = [];
+  loseIds.forEach((id, i) => {
+    if (!id) { appliedLPts.push(0); return; }
+    const m = getMember(id);
+    const streak = getLoseStreak(id);
+    let penalty = lPts[i];
+    let isFrozen = false;
+    if (streak === 2) { penalty = 0; isFrozen = true; }     // 3rd loss: freeze (no loss)
+    else if (streak >= 3) penalty = Math.round(penalty * 0.5); // 4th+ loss: -50%
+    // Safety cap: max -2500 per day per player
+    const today = new Date().toDateString();
+    const lostToday = state.matches
+      .filter(ma => new Date(ma.time).toDateString() === today && ma.loseIds.includes(id))
+      .reduce((sum, ma, mi) => {
+        const idx2 = ma.loseIds.indexOf(id);
+        return sum + (ma.lPts?.[idx2] || 0);
+      }, 0);
+    const remaining = Math.max(0, 3000 - lostToday);
+    penalty = Math.min(penalty, remaining);
+    const actualDeduct = Math.round(penalty * farmMult);
+    appliedLPts.push(actualDeduct);
+    m.score = Math.max(0, m.score - actualDeduct);
+    m.losses++;
+  });
+
+  // Build logic tags per player for history display
+
+  // per-loser logic tags
+  const lLogic = loseIds.map((id, i) => {
+    if (!id) return null;
+    const streak = getLoseStreak(id);
+    const tags = [];
+    if (matchType === 'upset') tags.push('เจอแข็ง');
+    else if (matchType === 'favor') tags.push('เจออ่อน');
+    else tags.push('สูสี');
+    if (hasMargin) tags.push(`margin+${margin}`);
+    if (streak >= 3) tags.push('streak −50%');
+    else if (streak === 2) tags.push('streak freeze');
+    if (farmMult < 1) tags.push('farm −50%');
+    return tags;
+  });
+
+  const wLogic = winIds.map((id, i) => {
+    if (!id) return null;
+    const tags = [];
+    if (matchType === 'upset') tags.push('เจอแข็ง');
+    else if (matchType === 'favor') tags.push('เจออ่อน');
+    else tags.push('สูสี');
+    if (hasMargin) tags.push(`margin+${margin}`);
+    if (farmMult < 1) tags.push('farm −50%');
+    return tags;
+  });
+
+  const match = { id: Date.now().toString(), winIds, loseIds, winScore: ws, loseScore: ls, time: Date.now(), wPts: wPts.map(p=>Math.round(p*farmMult)), lPts: appliedLPts, matchType, hasMargin, margin, farmMult, wLogic, lLogic, wTeamPre: Math.round(wTeamAvgPre), lTeamPre: Math.round(lTeamAvgPre) };
+  state.matches.push(match);
+  autoDecayIfNeeded();
+  save();
+
+  let farmMsg = farmMult < 1 ? ' ⚠️ Farm penalty applied' : '';
+  notify('บันทึกแล้ว!' + farmMsg);
+  // Reset score inputs but stay on match page
+  document.getElementById('win-score').value = '';
+  document.getElementById('lose-score').value = '';
+  refreshAll();
+}
+
+// =========== RANKING ===========
+function renderRanking() {
+  const el = document.getElementById('ranking-body');
+  if (!state.members.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">เพิ่มสมาชิกและบันทึกผลเพื่อดู ranking</div></div>'; return; }
+  const sorted = [...state.members].sort((a,b) => b.score - a.score);
+  const max = sorted[0].score;
+  el.innerHTML = `<table class="ranking-table"><thead><tr>
+    <th>#</th><th>ผู้เล่น</th><th>คะแนน</th><th>P · W/L</th><th>Win%</th><th>Form</th>
+  </tr></thead><tbody>${sorted.map((m,i) => {
+    const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n';
+    const barW = Math.round(m.score/max*100);
+    const played = m.wins + m.losses;
+    const wr = played > 0 ? Math.round(m.wins / played * 100) : null;
+    const wrColor = wr === null ? 'var(--muted)' : wr >= 60 ? 'var(--green)' : wr >= 40 ? 'var(--yellow)' : 'var(--red)';
+    // Last 5 matches form — detect freeze (3rd consecutive loss)
+    const recentMatches = state.matches.filter(ma => ma.winIds.includes(m.id) || ma.loseIds.includes(m.id)).slice(-5);
+    const formDots = recentMatches.map((ma, fi) => {
+      if (ma.winIds.includes(m.id)) {
+        return '<span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:var(--green);font-size:9px;line-height:16px;text-align:center;color:#000;font-weight:700">W</span>';
+      }
+      // check if this loss was a freeze (streak===2 at time of match = 3rd consecutive loss)
+      const lIdx = ma.loseIds.indexOf(m.id);
+      const tagStr = (ma.lLogic?.[lIdx] || []).join(' ');
+      if (tagStr.includes('freeze')) {
+        return '<span style="display:inline-block;padding:0 0px;height:16px;border-radius:0px;border:0px solid rgba(0,229,255,0.4);font-size:14px;line-height:16px;text-align:center;color:var(--accent);font-weight:700;white-space:nowrap">🧊</span>';
+      }
+      return '<span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:var(--red);font-size:9px;line-height:16px;text-align:center;color:#fff;font-weight:700">L</span>';
+    }).join('');
+    return `<tr onclick="openPlayer(${state.members.indexOf(m)})" style="cursor:pointer">
+      <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
+      <td><span class="player-icon">${m.icon}</span> <strong>${m.name}</strong></td>
+      <td>
+        <div style="font-weight:700;color:var(--accent);font-size:14px">${m.score.toLocaleString()}</div>
+        <div class="score-bar-wrap"><div class="score-bar" style="width:${barW}%"></div></div>
+      </td>
+      <td><span style="color:var(--muted);font-size:12px">${played}</span> · <span class="delta up">${m.wins}W</span> <span class="delta down">${m.losses}L</span></td>
+      <td><span style="font-weight:700;font-size:13px;color:${wrColor}">${wr !== null ? wr+'%' : '—'}</span></td>
+      <td><div style="display:flex;gap:3px;align-items:center">${formDots || '<span style="color:var(--muted);font-size:11px">—</span>'}</div></td>
+    </tr>`;
+  }).join('')}</tbody></table>`;
+}
+
+function renderRecentMatches() {
+  const el = document.getElementById('recent-matches');
+  const recent = state.matches.slice(-5).reverse();
+  if (!recent.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">🎯</div><div class="empty-text">ยังไม่มีการแข่งขัน</div></div>'; return; }
+  el.innerHTML = recent.map(m => {
+    const wNames = m.winIds.filter(x=>x).map(id => { const mm = getMember(id); return mm ? `${mm.icon}${mm.name}` : '?'; }).join(' & ');
+    const lNames = m.loseIds.filter(x=>x).map(id => { const mm = getMember(id); return mm ? `${mm.icon}${mm.name}` : '?'; }).join(' & ');
+    const score = m.winScore && m.loseScore ? `${m.winScore} : ${m.loseScore}` : '';
+    return `<div class="match-item">
+      <div class="match-teams">
+        <div class="match-winners">✅ ${wNames}</div>
+        <div class="match-losers">❌ ${lNames}</div>
+        <div class="match-time">${new Date(m.time).toLocaleString('th')}</div>
+      </div>
+      ${score ? `<div class="match-score">${score}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// =========== HISTORY ===========
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!state.matches.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">ยังไม่มีประวัติ</div></div>'; return; }
+  el.innerHTML = state.matches.slice().reverse().map((m, ri) => {
+    const idx = state.matches.length - 1 - ri;
+    const score = m.winScore && m.loseScore ? `<span class="tag tag-cyan" style="font-size:20px;margin-right:6px" >${m.winScore}  :  ${m.loseScore}</span>` : '';
+
+    const matchTypeLabel = m.matchType === 'upset' ? '<span class="tag tag-orange">เจอแข็ง</span>'
+      : m.matchType === 'favor' ? '<span style="font-size:11px;padding:2px 8px;border-radius:6px;background:rgba(100,116,139,0.15);color:var(--muted)">เจออ่อน</span>'
+      : '<span class="tag tag-cyan">สูสี</span>';
+
+    const renderPlayers = (ids, pts, logic, isWin) => ids.filter(x=>x).map((id, i) => {
+      const mm = getMember(id);
+      if (!mm) return '';
+      const pt = pts?.[i] || 0;
+      const ptColor = isWin ? 'var(--green)' : 'var(--red)';
+      const ptSign = isWin ? '+' : '';
+
+      // Build breakdown parts
+      const breakdownParts = [];
+      // base points
+      let base = 0;
+      if (m.matchType === 'upset') base = isWin ? 1200 : 1000;
+      else if (m.matchType === 'favor') base = 800;
+      else base = 1000;
+      breakdownParts.push(`base ${isWin?'+':'−'}${base.toLocaleString()}`);
+      // margin bonus
+      if (m.hasMargin) breakdownParts.push(`margin ${isWin?'+':'−'}200`);
+      // anti-carry (check via pts vs base)
+      if (isWin) {
+        const basePt = base + (m.hasMargin ? 200 : 0);
+        if (pt > 0 && Math.abs(pt - Math.round(basePt * 0.8)) <= 1) breakdownParts.push('carry ×0.8');
+        else if (pt > 0 && Math.abs(pt - Math.round(basePt * 1.2)) <= 1) breakdownParts.push('low ×1.2');
+      }
+      // streak / freeze for losers
+      if (!isWin) {
+        const tagStr = (logic?.[i] || []).join(' ');
+        if (tagStr.includes('freeze')) breakdownParts.push('🧊 freeze');
+        else if (tagStr.includes('−50%') && tagStr.includes('streak')) breakdownParts.push('streak −50%');
+      }
+      // farm
+      if (m.farmMult < 1) breakdownParts.push('farm −50%');
+
+      return `<div style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:14px">${mm.icon} ${mm.name}</span>
+          <span style="font-weight:900;color:${ptColor};font-size:14px;letter-spacing:-0.5px">${ptSign}${pt === 0 ? '0 🧊' : pt.toLocaleString()}</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;padding-left:2px">${breakdownParts.join(' · ')}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="match-item" style="flex-direction:column;align-items:stretch;gap:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;gap:6px;align-items:center">${score}${matchTypeLabel}${m.hasMargin ? '<span style="font-size:11px;padding:2px 8px;border-radius:6px;background:rgba(0,229,255,0.08);color:var(--accent)">🎯 margin '+m.margin+'</span>' : ''}${m.farmMult < 1 ? '<span style="font-size:11px;padding:2px 8px;border-radius:6px;background:rgba(239,68,68,0.08);color:var(--red)">🔻 farm</span>' : ''}${m.wTeamPre !== undefined ? '<span style="font-size:10px;color:var(--muted);margin-left:2px">gap '+Math.abs(m.wTeamPre-m.lTeamPre).toLocaleString()+'</span>' : ''}</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="match-time">${new Date(m.time).toLocaleString('th')}</div>
+          <button class="btn btn-danger btn-sm" onclick="deleteMatch(${idx},event)">🗑️</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:start">
+        <div style="background:rgba(16,185,129,0.06);border-radius:10px;padding:10px;border:1px solid rgba(16,185,129,0.12)">
+          <div style="font-size:11px;color:var(--green);font-weight:600;margin-bottom:6px">✅ ชนะ</div>
+          ${renderPlayers(m.winIds, m.wPts, m.wLogic, true)}
+          <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);font-size:11px;color:var(--muted);text-align:right">avg ${Math.round(m.winIds.filter(x=>x).reduce((s,id)=>{const mm=getMember(id);return s+(mm?mm.score:10000);},0)/Math.max(1,m.winIds.filter(x=>x).length)).toLocaleString()} pts</div>
+        </div>
+        <div style="color:var(--muted);font-size:12px;font-weight:400;padding-top:28px;text-align:center">VS</div>
+        <div style="background:rgba(239,68,68,0.06);border-radius:10px;padding:10px;border:1px solid rgba(239,68,68,0.12)">
+          <div style="font-size:11px;color:var(--red);font-weight:600;margin-bottom:6px">❌ แพ้</div>
+          ${renderPlayers(m.loseIds, m.lPts, m.lLogic, false)}
+          <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);font-size:11px;color:var(--muted);text-align:right">avg ${Math.round(m.loseIds.filter(x=>x).reduce((s,id)=>{const mm=getMember(id);return s+(mm?mm.score:10000);},0)/Math.max(1,m.loseIds.filter(x=>x).length)).toLocaleString()} pts</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteMatch(idx, e) {
+  e.stopPropagation();
+  if (!confirm('ลบแมตช์นี้?')) return;
+  const m = state.matches[idx];
+  // reverse points
+  m.winIds.filter(x=>x).forEach((id,i) => {
+    const mm = getMember(id);
+    if (mm) { mm.score -= (m.wPts?.[i]||0); mm.wins = Math.max(0, mm.wins-1); }
+  });
+  m.loseIds.filter(x=>x).forEach((id,i) => {
+    const mm = getMember(id);
+    if (mm) { mm.score += (m.lPts?.[i]||0); mm.losses = Math.max(0, mm.losses-1); }
+  });
+  state.matches.splice(idx, 1);
+  save();
+  refreshAll();
+  notify('ลบแมตช์แล้ว');
+}
+
+function clearAll() {
+  if (!confirm('ล้างข้อมูลทั้งหมด (แมตช์ & คะแนน)?')) return;
+  state.matches = [];
+  state.members.forEach(m => { m.score = 10000; m.wins = 0; m.losses = 0; });
+  save();
+  refreshAll();
+  notify('ล้างแล้ว');
+}
+
+// =========== FINANCE ===========
+function calcFin() {
+  const h = parseFloat(document.getElementById('fin-hours').value) || 0;
+  const r = parseFloat(document.getElementById('fin-rate-input').value) || 0;
+  const s = parseFloat(document.getElementById('fin-shuttle').value) || 0;
+  const p = parseInt(document.getElementById('fin-people').value) || 1;
+  const total = h * r + s;
+  const each = p > 0 ? Math.ceil(total / p) : 0;
+  document.getElementById('fin-total-calc').textContent = total.toLocaleString() + ' บาท';
+  document.getElementById('fin-each-calc').textContent = each.toLocaleString() + ' บาท';
+}
+
+function saveFinance() {
+  const h = parseFloat(document.getElementById('fin-hours').value) || 0;
+  const r = parseFloat(document.getElementById('fin-rate-input').value) || 0;
+  const s = parseFloat(document.getElementById('fin-shuttle').value) || 0;
+  const p = parseInt(document.getElementById('fin-people').value) || 1;
+  const total = h * r + s;
+  const entry = {
+    id: Date.now().toString(),
+    date: document.getElementById('fin-date').value,
+    payer: document.getElementById('fin-payer').value.trim(),
+    hours: h, rate: r, shuttle: s, people: p,
+    total, each: Math.ceil(total/p),
+    note: document.getElementById('fin-note').value.trim()
+  };
+  state.finances.push(entry);
+  save();
+  closeModal('modal-finance');
+  renderFinance();
+  notify('บันทึกการเงินแล้ว 💰');
+}
+
+function renderFinance() {
+  const total = state.finances.reduce((s,f) => s+f.total, 0);
+  const avgPer = state.finances.length ? Math.round(state.finances.reduce((s,f) => s+f.each, 0) / state.finances.length) : 0;
+  const avgRate = state.finances.length ? Math.round(state.finances.reduce((s,f) => s+f.rate, 0) / state.finances.length) : 0;
+  document.getElementById('fin-sessions').textContent = state.finances.length;
+  document.getElementById('fin-total').textContent = total.toLocaleString();
+  document.getElementById('fin-avg').textContent = avgPer.toLocaleString();
+  document.getElementById('fin-rate').textContent = avgRate.toLocaleString();
+
+  const el = document.getElementById('finance-list');
+  if (!state.finances.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">💰</div><div class="empty-text">ยังไม่มีรายการ</div></div>'; return; }
+  el.innerHTML = state.finances.slice().reverse().map((f, ri) => {
+    const idx = state.finances.length - 1 - ri;
+    return `<div class="session-item">
+      <div class="session-header">
+        <div>
+          <div class="session-date">📅 ${f.date}</div>
+          ${f.payer ? `<div style="font-size:12px;color:var(--muted)">จ่ายโดย: ${f.payer}</div>` : ''}
+        </div>
+        <div style="text-align:right">
+          <div class="session-total">${f.total.toLocaleString()} บาท</div>
+          <div style="font-size:12px;color:var(--green)">คนละ ${f.each.toLocaleString()} บาท</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${f.hours}ชม. × ${f.rate} บาท${f.shuttle ? ` + ลูก ${f.shuttle} บาท` : ''} | ${f.people} คน${f.note ? ' | '+f.note : ''}</div>
+      <button class="btn btn-danger btn-sm" onclick="deleteFinance(${idx})">🗑️ ลบ</button>
+    </div>`;
+  }).join('');
+}
+
+function deleteFinance(idx) {
+  if (!confirm('ลบรายการนี้?')) return;
+  state.finances.splice(idx, 1);
+  save();
+  renderFinance();
+  notify('ลบแล้ว');
+}
+
+// =========== STATS ===========
+function updateStats() {
+  document.getElementById('stat-members').textContent = state.members.length;
+  document.getElementById('stat-matches').textContent = state.matches.length;
+  const today = new Date().toDateString();
+  document.getElementById('stat-today').textContent = state.matches.filter(m => new Date(m.time).toDateString() === today).length;
+  // farm blocked = matches where same team played 3+ times
+  let farmCount = 0;
+  const todayMatches = state.matches.filter(m => new Date(m.time).toDateString() === today);
+  const teamCounts = {};
+  todayMatches.forEach(m => {
+    const k = [...m.winIds,...m.loseIds].filter(x=>x).sort().join(',');
+    teamCounts[k] = (teamCounts[k]||0)+1;
+    if (teamCounts[k] >= 3) farmCount++;
+  });
+  document.getElementById('stat-farm').textContent = farmCount;
+}
+
+// Close modals when clicking overlay
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// Init finance calc
+calcFin();
+</script>
+
+<!-- =========== FIREBASE =========== -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ⚠️ วาง firebaseConfig ของคุณตรงนี้
+  // ได้จาก Firebase Console > Project Settings > Your apps > Web
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCC1AYaGR9bkOglz5CNA5gWoOshsQB9-cU",
+  authDomain: "snowitefc.firebaseapp.com",
+  databaseURL: "https://snowitefc-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "snowitefc",
+  storageBucket: "snowitefc.firebasestorage.app",
+  messagingSenderId: "789793746642",
+  appId: "1:789793746642:web:28fd09f919275240cb470b",
+  measurementId: "G-RG85VJEHV8"
+};
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const DOC_REF = doc(db, "clubs", "swfc"); // เปลี่ยน "swfc" เป็นชื่อก๊วนได้
+
+  // ---- Override save() ----
+  window.save = async function() {
+    try {
+      await setDoc(DOC_REF, JSON.parse(JSON.stringify(state)));
+    } catch (e) {
+      console.error("Firebase save error:", e);
+    }
+  };
+
+  // ---- โหลดข้อมูล + Realtime sync ----
+  let firstLoad = true;
+  onSnapshot(DOC_REF, (snap) => {
+    if (snap.exists()) {
+      state = snap.data();
+      if (!state.members)  state.members  = [];
+      if (!state.matches)  state.matches  = [];
+      if (!state.finances) state.finances = [];
+      if (!state.rsvp)     state.rsvp     = {};
+    }
+    if (firstLoad) {
+      firstLoad = false;
+      autoDecayIfNeeded();
+    }
+    refreshAll();
+  }, (err) => {
+    console.error("Firebase error:", err);
+    // Fallback: โหลดจาก localStorage ถ้า Firebase ใช้ไม่ได้
+    const d = localStorage.getItem('bclub');
+    if (d) { state = JSON.parse(d); refreshAll(); }
+  });
+</script>
+</body>
+</html>
