@@ -1506,14 +1506,19 @@ calcFin();
 
   // ⚠️ วาง firebaseConfig ของคุณตรงนี้
   // ได้จาก Firebase Console > Project Settings > Your apps > เพิ่ม Web App
-  const firebaseConfig = {
-    apiKey:            "YOUR_API_KEY",
-    authDomain:        "YOUR_PROJECT.firebaseapp.com",
-    projectId:         "YOUR_PROJECT_ID",
-    storageBucket:     "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId:             "YOUR_APP_ID"
-  };
+
+
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCC1AYaGR9bkOglz5CNA5gWoOshsQB9-cU",
+  authDomain: "snowitefc.firebaseapp.com",
+  databaseURL: "https://snowitefc-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "snowitefc",
+  storageBucket: "snowitefc.firebasestorage.app",
+  messagingSenderId: "789793746642",
+  appId: "1:789793746642:web:28fd09f919275240cb470b",
+  measurementId: "G-RG85VJEHV8"
+};
 
   const app    = initializeApp(firebaseConfig);
   const db     = getFirestore(app);
