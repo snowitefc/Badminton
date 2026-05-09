@@ -426,19 +426,39 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
     <!-- STEP 0: Choose role -->
     <div class="w-step on" id="ws-step0">
-      <div class="wc-choices">
-        <div class="wc-choice" id="choice-join" onclick="wSelectRole('join')">
-          <div class="wc-choice-icon">🏸</div>
-          <div class="wc-choice-title">เข้าร่วมก๊วน</div>
-          <div class="wc-choice-sub">มีรหัสห้องอยู่แล้ว<br>เข้าร่วมในฐานะสมาชิก</div>
+      <!-- Step 0a: Sign in first -->
+      <div id="ws-step0-signin" style="">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:36px;margin-bottom:8px;">🏸</div>
+          <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:4px;">ยินดีต้อนรับ</div>
+          <div style="font-size:12px;color:var(--muted);">เข้าสู่ระบบเพื่อเริ่มใช้งาน</div>
         </div>
-        <div class="wc-choice" id="choice-create" onclick="wSelectRole('create')">
-          <div class="wc-choice-icon">⚙️</div>
-          <div class="wc-choice-title">สร้างก๊วน</div>
-          <div class="wc-choice-sub">สร้างห้องใหม่<br>เป็น Admin ของก๊วน</div>
+        <button class="btn-google" id="step0-google-btn" onclick="wStep0SignIn()"
+          style="width:100%;justify-content:center;">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-3.58-13.47-8.71l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+          เข้าสู่ระบบด้วย Google
+        </button>
+        <div style="text-align:center;margin-top:12px;">
+          <button onclick="wResetSession()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;opacity:0.6;">↺ ล้างข้อมูล / เริ่มใหม่</button>
         </div>
       </div>
-      <div class="welcome-hint">เลือกว่าต้องการทำอะไร</div>
+      <!-- Step 0b: Choose role (after sign in) -->
+      <div id="ws-step0-role" style="display:none;">
+        <div id="step0-user-chip" style="margin-bottom:16px;"></div>
+        <div class="wc-choices">
+          <div class="wc-choice" id="choice-join" onclick="wSelectRole('join')">
+            <div class="wc-choice-icon">🏸</div>
+            <div class="wc-choice-title">เข้าร่วมก๊วน</div>
+            <div class="wc-choice-sub">มีรหัสห้องอยู่แล้ว<br>เข้าร่วมในฐานะสมาชิก</div>
+          </div>
+          <div class="wc-choice" id="choice-create" onclick="wSelectRole('create')">
+            <div class="wc-choice-icon">⚙️</div>
+            <div class="wc-choice-title">สร้างก๊วน</div>
+            <div class="wc-choice-sub">สร้างห้องใหม่<br>เป็น Admin ของก๊วน</div>
+          </div>
+        </div>
+        <div class="welcome-hint">เลือกว่าต้องการทำอะไร</div>
+      </div>
     </div>
 
     <!-- STEP 1a: Join — enter room code then Google login -->
@@ -521,8 +541,51 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <span id="fb-text">Firebase</span>
     </div>
     <div id="header-room-badge" style="display:none;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;background:rgba(240,192,64,.12);border:1px solid rgba(240,192,64,.3);color:var(--accent);font-family:'IBM Plex Mono',monospace;cursor:pointer;" title="รหัสห้อง" onclick="_showRoomCode()"></div>
+    <!-- Profile Button -->
+    <button id="profile-btn" onclick="toggleProfileMenu(event)" style="background:none;border:none;cursor:pointer;padding:0;position:relative;display:flex;align-items:center;">
+      <div id="profile-avatar" style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:2px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:16px;">
+        <img id="profile-avatar-img" src="" style="width:100%;height:100%;object-fit:cover;display:none;" referrerpolicy="no-referrer">
+        <span id="profile-avatar-fallback">👤</span>
+      </div>
+    </button>
   </div>
 </header>
+
+<!-- Profile Dropdown Menu -->
+<div id="profile-menu" style="display:none;position:fixed;top:54px;right:12px;z-index:9999;
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  box-shadow:0 8px 32px rgba(0,0,0,.25);min-width:220px;overflow:hidden;">
+  <!-- User Info -->
+  <div style="padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+    <div style="width:38px;height:38px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--surface);display:flex;align-items:center;justify-content:center;">
+      <img id="profile-menu-photo" src="" style="width:100%;height:100%;object-fit:cover;display:none;" referrerpolicy="no-referrer">
+      <span id="profile-menu-fallback" style="font-size:20px;">👤</span>
+    </div>
+    <div style="min-width:0;">
+      <div id="profile-menu-name" style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+      <div id="profile-menu-email" style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+    </div>
+  </div>
+  <!-- Room Info -->
+  <div style="padding:10px 16px;border-bottom:1px solid var(--border);">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">ห้อง</div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span id="profile-menu-room" style="font-size:13px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:var(--accent);">—</span>
+      <button onclick="copyRoomCode()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);padding:2px 6px;border-radius:6px;border:1px solid var(--border);">คัดลอก</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;">สถานะ</div>
+    <div id="profile-menu-role" style="font-size:12px;font-weight:600;margin-top:2px;">—</div>
+  </div>
+  <!-- Actions -->
+  <div style="padding:6px;">
+    <button onclick="profileLogout()" style="width:100%;background:none;border:none;cursor:pointer;
+      padding:9px 12px;border-radius:9px;text-align:left;font-size:13px;color:#ef4444;
+      font-family:'Kanit',sans-serif;display:flex;align-items:center;gap:8px;
+      transition:background .15s;" onmouseover="this.style.background='rgba(239,68,68,.08)'" onmouseout="this.style.background='none'">
+      <span>🚪</span> ออกจากระบบ
+    </button>
+  </div>
+</div>
 
 <!-- SEASON PROGRESS BAR -->
 <div class="season-bar-wrap" onclick="openSeasonGoalModal()" style="cursor:pointer;" title="คลิกเพื่อตั้งเป้าหมาย Season">
@@ -656,7 +719,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   </div>
 
   <!-- ADMIN TOOL CARD (collapsible, minimal) -->
-  <div class="panel" style="border:1px solid var(--border);padding:0;overflow:hidden;">
+  <div class="panel admin-only" style="border:1px solid var(--border);padding:0;overflow:hidden;">
     <!-- Header / Toggle -->
     <button onclick="toggleAdminTool()" id="admin-tool-toggle"
       style="width:100%;display:flex;align-items:center;justify-content:space-between;
@@ -745,7 +808,7 @@ function toggleAdminTool() {
 <!-- STATISTICS -->
 <div id="page-stats" class="page">
   <div class="panel">
-    <div class="pt">📈 สถิติผู้เล่น <button class="btn btn-y btn-sm pt-action" onclick="openModal('modal-add')">➕ เพิ่มสมาชิก</button></div>
+    <div class="pt">📈 สถิติผู้เล่น <button class="btn btn-y btn-sm pt-action" onclick="_openAddMemberModal()">➕ เพิ่มสมาชิก</button></div>
     <div id="stats-grid" class="mgrid"></div>
   </div>
   <div id="player-details" style="display:none;">
@@ -824,7 +887,19 @@ function toggleAdminTool() {
 <div class="overlay" id="modal-add">
   <div class="modal">
     <div class="modal-t">➕ เพิ่มสมาชิกใหม่</div>
-    <div class="fg"><label class="fl">ชื่อ *</label><input class="fi" id="nm-name" placeholder="ชื่อ-นามสกุล"></div>
+    <div class="fg">
+      <label class="fl">ชื่อ *</label>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input class="fi" id="nm-name" placeholder="ชื่อ-นามสกุล" style="flex:1;">
+        <button id="nm-google-fill-btn" onclick="fillNameFromGoogle()"
+          style="white-space:nowrap;padding:6px 10px;border-radius:8px;border:1px solid var(--border);
+          background:var(--surface);font-size:11px;cursor:pointer;color:var(--text);display:none;">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            width="12" height="12" style="vertical-align:middle;margin-right:3px;" referrerpolicy="no-referrer">
+          ใช้ชื่อ Google
+        </button>
+      </div>
+    </div>
     <div class="fg"><label class="fl">เบอร์โทร (ไม่บังคับ)</label><input class="fi" id="nm-phone" placeholder="08x-xxx-xxxx"></div>
     <div class="modal-act">
       <button class="btn btn-y btn-full" onclick="addMember()">✅ เพิ่ม</button>
@@ -1434,12 +1509,243 @@ function recordMatch(){
 }
 
 // ===== RENDER =====
+
+
+// ===== STEP 0: SIGN IN FIRST FLOW =====
+async function wStep0SignIn() {
+  if (!_auth) {
+    // Wait for auth
+    const btn = document.getElementById('step0-google-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="w-spinner" style="border-top-color:#4285F4;border-color:rgba(0,0,0,.12);"></span> กำลังเชื่อมต่อ...';
+    await new Promise(resolve => {
+      const t = Date.now();
+      const check = setInterval(() => {
+        if (_auth || Date.now() - t > 8000) { clearInterval(check); resolve(); }
+      }, 100);
+    });
+    if (!_auth) {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 48 48">...</svg> เข้าสู่ระบบด้วย Google';
+      toast('❌ Firebase โหลดไม่ได้ ตรวจสอบ internet', '');
+      return;
+    }
+  }
+  const btn = document.getElementById('step0-google-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="w-spinner" style="border-top-color:#4285F4;border-color:rgba(0,0,0,.12);"></span> กำลังเชื่อมต่อ...';
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    const result = await _auth.signInWithPopup(provider);
+    _wStep0SignedIn(result.user);
+  } catch(e) {
+    if (['auth/popup-blocked','auth/popup-closed-by-user','auth/cancelled-popup-request',
+         'auth/operation-not-supported-in-this-environment'].includes(e.code)) {
+      localStorage.setItem('bcm_pendingFlow', 'step0');
+      await _auth.signInWithRedirect(provider);
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-3.58-13.47-8.71l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg> เข้าสู่ระบบด้วย Google';
+      toast('❌ ' + (e.message || e.code), '');
+    }
+  }
+}
+
+function _wStep0SignedIn(user) {
+  _wUser = user;
+  // Save user to localStorage
+  localStorage.setItem('bcm_user', JSON.stringify({
+    uid: user.uid, name: user.displayName, email: user.email, photo: user.photoURL
+  }));
+  // Render user chip in step0
+  _renderUserChip('step0-user-chip', user, 'step0');
+  // Hide sign-in, show role picker
+  document.getElementById('ws-step0-signin').style.display = 'none';
+  document.getElementById('ws-step0-role').style.display = '';
+  // Update header avatar
+  _updateProfileAvatar();
+}
+
+// ===== PROFILE MENU =====
+function toggleProfileMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('profile-menu');
+  if (menu.style.display === 'none') {
+    _updateProfileMenu();
+    menu.style.display = 'block';
+  } else {
+    menu.style.display = 'none';
+  }
+}
+
+function _updateProfileMenu() {
+  const name    = localStorage.getItem('bcm_adminName') || localStorage.getItem('bcm_user') && JSON.parse(localStorage.getItem('bcm_user')||'{}').name || '';
+  const email   = localStorage.getItem('bcm_adminEmail') || JSON.parse(localStorage.getItem('bcm_user')||'{}').email || '';
+  const photo   = localStorage.getItem('bcm_adminPhoto') || JSON.parse(localStorage.getItem('bcm_user')||'{}').photo || '';
+  const room    = localStorage.getItem('bcm_roomCode') || '—';
+  const role    = localStorage.getItem('bcm_role') || 'user';
+  const club    = getClubName() || '—';
+
+  // Name & email
+  const nameEl = document.getElementById('profile-menu-name');
+  const emailEl = document.getElementById('profile-menu-email');
+  if (nameEl) nameEl.textContent = name || '—';
+  if (emailEl) emailEl.textContent = email || '—';
+
+  // Avatar
+  const photoEl = document.getElementById('profile-menu-photo');
+  const fallbackEl = document.getElementById('profile-menu-fallback');
+  const avatarImg = document.getElementById('profile-avatar-img');
+  const avatarFallback = document.getElementById('profile-avatar-fallback');
+  if (photo) {
+    if (photoEl) { photoEl.src = photo; photoEl.style.display = 'block'; }
+    if (fallbackEl) fallbackEl.style.display = 'none';
+    if (avatarImg) { avatarImg.src = photo; avatarImg.style.display = 'block'; }
+    if (avatarFallback) avatarFallback.style.display = 'none';
+  } else {
+    if (photoEl) photoEl.style.display = 'none';
+    if (fallbackEl) fallbackEl.style.display = '';
+    if (avatarImg) avatarImg.style.display = 'none';
+    if (avatarFallback) avatarFallback.style.display = '';
+  }
+
+  // Room
+  const roomEl = document.getElementById('profile-menu-room');
+  if (roomEl) roomEl.textContent = room;
+
+  // Role badge
+  const roleEl = document.getElementById('profile-menu-role');
+  if (roleEl) {
+    if (role === 'admin') {
+      roleEl.innerHTML = '<span style="color:var(--accent);">⚙️ Admin</span> · <span style="color:var(--muted);font-size:11px;">' + club + '</span>';
+    } else {
+      roleEl.innerHTML = '<span style="color:var(--green,#4ade80);">🏸 สมาชิก</span> · <span style="color:var(--muted);font-size:11px;">' + club + '</span>';
+    }
+  }
+}
+
+function copyRoomCode() {
+  const code = localStorage.getItem('bcm_roomCode');
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => {
+    toast('คัดลอกรหัสห้อง ' + code + ' แล้ว', '✅');
+    document.getElementById('profile-menu').style.display = 'none';
+  }).catch(() => {
+    toast(code, '🔑');
+  });
+}
+
+function profileLogout() {
+  if (!confirm('ออกจากระบบ?')) return;
+  document.getElementById('profile-menu').style.display = 'none';
+  ['bcm_welcomed','bcm_role','bcm_roomCode','bcm_clubname','bcm_user',
+   'bcm_adminUid','bcm_adminName','bcm_adminEmail','bcm_adminPhoto',
+   'bcm_pendingFlow','bcm_pendingJoinCode'].forEach(k => localStorage.removeItem(k));
+  if (window._auth) {
+    window._auth.signOut().then(() => location.reload()).catch(() => location.reload());
+  } else {
+    location.reload();
+  }
+}
+
+// Close profile menu when clicking outside
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('profile-menu');
+  const btn = document.getElementById('profile-btn');
+  if (menu && menu.style.display !== 'none') {
+    if (!menu.contains(e.target) && !btn.contains(e.target)) {
+      menu.style.display = 'none';
+    }
+  }
+});
+
+// Update profile avatar in header after sign-in
+function _updateProfileAvatar() {
+  const photo = localStorage.getItem('bcm_adminPhoto') || JSON.parse(localStorage.getItem('bcm_user')||'{}').photo || '';
+  const avatarImg = document.getElementById('profile-avatar-img');
+  const avatarFallback = document.getElementById('profile-avatar-fallback');
+  if (photo && avatarImg) {
+    avatarImg.src = photo;
+    avatarImg.style.display = 'block';
+    if (avatarFallback) avatarFallback.style.display = 'none';
+  }
+}
+
+
+// ===== AUTO-FILL NAME FROM GOOGLE =====
+function fillNameFromGoogle() {
+  const name = localStorage.getItem('bcm_adminName')
+    || (JSON.parse(localStorage.getItem('bcm_user') || '{}').name)
+    || (_wUser && _wUser.displayName)
+    || '';
+  if (name) {
+    document.getElementById('nm-name').value = name;
+    document.getElementById('nm-name').focus();
+  } else {
+    toast('ไม่พบชื่อจาก Google', '⚠️');
+  }
+}
+
+function _openAddMemberModal() {
+  // Auto-fill ชื่อจาก Google profile ถ้าช่องว่างอยู่
+  const nameInput = document.getElementById('nm-name');
+  const phoneInput = document.getElementById('nm-phone');
+  if (nameInput) nameInput.value = '';
+  if (phoneInput) phoneInput.value = '';
+
+  const googleName = localStorage.getItem('bcm_adminName')
+    || (JSON.parse(localStorage.getItem('bcm_user') || '{}').name)
+    || (_wUser && _wUser.displayName)
+    || '';
+
+  const fillBtn = document.getElementById('nm-google-fill-btn');
+  if (googleName && fillBtn) {
+    fillBtn.style.display = '';
+    fillBtn.title = 'ใช้ชื่อ: ' + googleName;
+  }
+
+  // ถ้าเป็น user (ไม่ใช่ admin) → ใส่ชื่อ Google อัตโนมัติเลย
+  const role = localStorage.getItem('bcm_role');
+  if (role === 'user' && googleName && nameInput) {
+    nameInput.value = googleName;
+  }
+
+  _openAddMemberModal();
+  setTimeout(() => { if(nameInput) nameInput.focus(); }, 200);
+}
+
+// ===== ROLE HELPERS =====
+function isAdmin() {
+  return localStorage.getItem('bcm_role') === 'admin';
+}
+
+function renderRole() {
+  const admin = isAdmin();
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = admin ? '' : 'none';
+  });
+  document.querySelectorAll('.user-only').forEach(el => {
+    el.style.display = admin ? 'none' : '';
+  });
+  // Lock club name for non-admin
+  const clubInput = document.getElementById('club-name-input');
+  if (clubInput) clubInput.readOnly = !admin;
+  // Show room code badge
+  const roomCode = localStorage.getItem('bcm_roomCode');
+  const badge = document.getElementById('header-room-badge');
+  if (badge && roomCode) {
+    badge.style.display = 'block';
+    badge.textContent = roomCode;
+  }
+}
+
 function renderAll(){
   renderStats(); renderRanking(); renderRecentMatches();
   renderBestPair(); renderWorstPair(); renderDashboardStats();
   renderMemberGrid(); renderSelects(); renderMatchHistory(); renderFinance(); renderDecayHistory(); renderRSVP();
   renderRules(); renderPlayerStats(); renderTrophy();
   updateSeasonLabels();
+  renderRole();
 }
 
 function updateSeasonLabels(){
@@ -3391,6 +3697,25 @@ loadTheme();
   const badge = document.getElementById('header-room-badge');
   if(code && badge) { badge.style.display = 'block'; badge.textContent = code; }
 })();
+
+// Auto-restore session on reload - Firebase auth will handle dashboard redirect
+(function(){
+  const welcomed = localStorage.getItem('bcm_welcomed');
+  const role = localStorage.getItem('bcm_role');
+  const clubName = localStorage.getItem('bcm_clubname');
+
+  // ถ้าไม่มี session ครบ → แสดง welcome screen (sign in first)
+  if (!welcomed || !role || !clubName) {
+    // แสดง sign-in step
+    const signin = document.getElementById('ws-step0-signin');
+    const roleDiv = document.getElementById('ws-step0-role');
+    if (signin) signin.style.display = '';
+    if (roleDiv) roleDiv.style.display = 'none';
+    return;
+  }
+  // มี session ครบ → onAuthStateChanged จะ redirect เข้า dashboard
+  // แค่ซ่อน welcome ไว้รอก่อน (Firebase auth loading)
+})();
 function _showRoomCode(){
   const code = localStorage.getItem('bcm_roomCode') || '?';
   const role = localStorage.getItem('bcm_role') || 'user';
@@ -3438,8 +3763,57 @@ const firebaseConfig = {
   const db = firebase.database();
   _auth = firebase.auth();
 
-  // Check if returning from signInWithRedirect
-  _checkRedirectResult();
+  // Listen for auth state — catches redirect result on mobile too
+  _auth.onAuthStateChanged(function(user) {
+    if (!user) {
+      // Signed out — make sure welcome screen is visible
+      const ws = document.getElementById('welcome-screen');
+      if (ws && ws.style.display === 'none') {
+        ws.style.display = '';
+        ws.classList.remove('hide');
+      }
+      return;
+    }
+    const ws = document.getElementById('welcome-screen');
+
+    // ✅ Case 1: ครั้งถัดไป — มี session อยู่แล้ว → เข้า dashboard เลย
+    const welcomed = localStorage.getItem('bcm_welcomed');
+    const role = localStorage.getItem('bcm_role');
+    const clubName = localStorage.getItem('bcm_clubname');
+    if (welcomed && role && clubName) {
+      if (ws) { ws.classList.add('hide'); setTimeout(()=>{ ws.style.display='none'; },420); }
+      renderAll(); renderRole(); _updateProfileAvatar();
+      // เริ่ม real-time sync สำหรับ returning user
+      if (typeof restartRealtimeSync === 'function') setTimeout(restartRealtimeSync, 500);
+      return;
+    }
+
+    // ✅ Case 2: กลับมาจาก redirect (signInWithRedirect)
+    if (!ws || ws.style.display === 'none') return;
+    const flow = localStorage.getItem('bcm_pendingFlow');
+    if (flow === 'step0') {
+      // redirect กลับมาที่ step0 — แสดง role picker
+      localStorage.removeItem('bcm_pendingFlow');
+      _wStep0SignedIn(user);
+      return;
+    }
+    if (!flow) {
+      // ไม่มี pending flow แต่ยังอยู่ที่ welcome → แสดง role picker
+      _wStep0SignedIn(user);
+      return;
+    }
+    const savedCode = localStorage.getItem('bcm_pendingJoinCode');
+    if (flow === 'join' && savedCode) {
+      _wJoinCode = savedCode;
+      wGoStep('join-login');
+      document.getElementById('join-room-preview').textContent = '🏸 เข้าร่วมห้อง: ' + savedCode;
+    } else if (flow === 'create') {
+      wGoStep('create');
+    }
+    _wSetSignedIn(user, flow);
+    localStorage.removeItem('bcm_pendingFlow');
+    localStorage.removeItem('bcm_pendingJoinCode');
+  });
 
   // Determine Firebase DB path: room-specific if available, else legacy 'state'
   function _roomRef() {
@@ -3537,20 +3911,72 @@ const firebaseConfig = {
     }
   }
 
-  // Listen for connection state changes — always load from Firebase on first connect
+  // Listen for connection state changes
   let _autoLoaded = false;
+  let _realtimeListener = null;
+
   db.ref('.info/connected').on('value', (snapshot) => {
-    if (_forceOffline) return; // ถ้า force offline ไม่ต้องอัปเดต UI
+    if (_forceOffline) return;
     if (snapshot.val() === true) {
       updateFirebaseStatus(true);
       if (!_autoLoaded) {
         _autoLoaded = true;
-        loadMembersFromFirebase(true); // silent auto-load on startup
+        _startRealtimeSync(); // เริ่ม real-time listener ทันที
       }
     } else {
       updateFirebaseStatus(false);
     }
   });
+
+  // ===== REAL-TIME SYNC =====
+  function _startRealtimeSync() {
+    const code = localStorage.getItem('bcm_roomCode');
+    if (!code) {
+      // ยังไม่มีรหัสห้อง — โหลดแบบครั้งเดียวก่อน
+      loadMembersFromFirebase(true);
+      return;
+    }
+
+    // ถ้ามี listener เก่าอยู่ ให้ detach ก่อน
+    if (_realtimeListener) {
+      db.ref('rooms/' + code + '/state').off('value', _realtimeListener);
+    }
+
+    _realtimeListener = db.ref('rooms/' + code + '/state').on('value', (snapshot) => {
+      if (_forceOffline) return;
+      const data = snapshot.val();
+      if (!data) return;
+
+      // อัปเดต state S จาก Firebase
+      const toArr = v => !v ? [] : Array.isArray(v) ? v : Object.values(v);
+      S.members     = toArr(data.members);
+      S.matches     = toArr(data.matches);
+      S.finance     = toArr(data.finance);
+      S.decayEvents = toArr(data.decayEvents);
+      S.seasons     = toArr(data.seasons);
+      if (data.rulesConfig) Object.assign(RC, data.rulesConfig);
+      if (data.clubName) {
+        setClubName(data.clubName);
+        localStorage.setItem('bcm_clubname', data.clubName);
+      }
+
+      // Re-render UI
+      renderAll();
+
+      if (!_autoLoaded) {
+        _autoLoaded = true;
+      }
+    }, (error) => {
+      console.error('Real-time sync error:', error);
+      updateFirebaseStatus(false);
+    });
+  }
+
+  // เรียก _startRealtimeSync เมื่อ roomCode เปลี่ยน (เช่นหลัง join ห้อง)
+  function restartRealtimeSync() {
+    _autoLoaded = false;
+    _startRealtimeSync();
+  }
 </script>
 
 <!-- MODAL CHANGE CLUB NAME -->
@@ -3593,17 +4019,14 @@ function saveClubName(){
 document.getElementById('modal-club-name').addEventListener('click',function(e){if(e.target===this)closeModal('modal-club-name');});
 
 // ===== WELCOME SCREEN (AUTH) =====
-let _wRole = null;       // 'join' | 'create'
-let _wUser = null;       // Firebase Auth user object
-let _wJoinCode = null;   // validated room code (for join)
-let _wNewCode = null;    // generated room code (for create)
-let _auth = null;        // Firebase Auth instance (set after Firebase init)
+// ===== WELCOME SCREEN (AUTH) =====
+// (global vars declared above Firebase init block)
 
 function wGoStep(id) {
   document.querySelectorAll('.w-step').forEach(el => el.classList.remove('on'));
-  // รองรับทั้ง ws-step-X และ ws-stepX (เช่น ws-step0)
+  // รองรับ ws-step-X และ ws-stepX (เช่น ws-step0)
   const el = document.getElementById('ws-step-' + id)
-          || document.getElementById('ws-step' + id.replace(/^step/,''));
+          || document.getElementById('ws-step' + id.replace(/^step/, ''));
   if(el) el.classList.add('on');
 }
 
@@ -3611,7 +4034,19 @@ function wSelectRole(role) {
   _wRole = role;
   document.querySelectorAll('.wc-choice').forEach(c => c.classList.remove('selected'));
   document.getElementById('choice-' + (role === 'join' ? 'join' : 'create')).classList.add('selected');
-  setTimeout(() => wGoStep(role), 120);
+  setTimeout(() => {
+    wGoStep(role);
+    // ถ้า sign in แล้ว ซ่อนปุ่ม Google และแสดง user chip ในหน้าถัดไปเลย
+    if (_wUser) {
+      const googleBtn = document.getElementById(role === 'join' ? 'join-google-btn' : 'create-google-btn');
+      const chipId = role === 'join' ? 'join-user-chip' : 'create-user-chip';
+      if (googleBtn) googleBtn.style.display = 'none';
+      _renderUserChip(chipId, _wUser, role);
+      // Enable start button
+      const startBtn = document.getElementById(role === 'join' ? 'join-start-btn' : 'create-start-btn');
+      if (startBtn) startBtn.disabled = false;
+    }
+  }, 120);
 }
 
 async function wJoinNext() {
@@ -3628,14 +4063,17 @@ async function wJoinNext() {
   btn.innerHTML = '<span class="w-spinner"></span>';
   try {
     let roomExists = false;
-    // Try to check if room exists in Firebase
-    if (typeof db !== 'undefined') {
+    const _db2 = window.db || null;
+    if (_db2) {
       try {
-        const snap = await db.ref('rooms/' + code).once('value');
+        const snap = await Promise.race([
+          _db2.ref('rooms/' + code).once('value'),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+        ]);
         roomExists = snap.exists();
-      } catch(e) { roomExists = true; } // fallback: allow if Firebase unreachable
+      } catch(e) { roomExists = true; }
     } else {
-      roomExists = true; // Firebase not yet loaded — allow anyway
+      roomExists = true;
     }
     if (!roomExists) {
       toast('ไม่พบรหัสห้อง "' + code + '" กรุณาตรวจสอบอีกครั้ง', '❌');
@@ -3670,26 +4108,21 @@ function _wSetSignedIn(user, flow) {
 }
 
 async function wGoogleSignIn(flow) {
-  const btnId = flow === 'join' ? 'join-google-btn' : 'create-google-btn';
-  const btn = document.getElementById(btnId);
-
-  // file:// หรือ Firebase โหลดไม่ได้ → ใช้ Guest/Offline mode
-  if (location.protocol === 'file:' || !_auth) {
-    const fakeUser = {
-      uid: 'local-' + Date.now(),
-      displayName: 'Local User',
-      email: '',
-      photoURL: null,
-    };
-    _wSetSignedIn(fakeUser, flow);
-    if (!_auth) {
-      toast('⚠️ Firebase โหลดไม่ได้ ใช้งานแบบ Offline', '');
-    } else {
-      toast('⚠️ file:// ไม่รองรับ Google Auth ใช้งาน Offline แทน', '');
+  // Wait up to 5s for _auth to be ready
+  if (!_auth) {
+    let waited = 0;
+    while (!_auth && waited < 5000) {
+      await new Promise(r => setTimeout(r, 200));
+      waited += 200;
     }
+  }
+  if (!_auth) {
+    toast('Firebase Auth โหลดไม่สำเร็จ — ลอง refresh หน้าใหม่', '❌');
     return;
   }
 
+  const btnId = flow === 'join' ? 'join-google-btn' : 'create-google-btn';
+  const btn = document.getElementById(btnId);
   btn.disabled = true;
   btn.innerHTML = '<span class="w-spinner" style="border-top-color:#4285F4;border-color:rgba(0,0,0,.12);"></span> กำลังเชื่อมต่อ...';
 
@@ -3706,17 +4139,17 @@ async function wGoogleSignIn(flow) {
       'auth/popup-blocked',
       'auth/popup-closed-by-user',
       'auth/cancelled-popup-request',
-      'auth/operation-not-supported-in-this-environment', // file://
+      'auth/operation-not-supported-in-this-environment',
       'auth/unauthorized-domain',
     ];
     if (!popupErrors.includes(e.code)) {
-      // Real error — show message
       btn.disabled = false;
       btn.innerHTML = _GOOGLE_SVG + ' เข้าสู่ระบบด้วย Google';
-      toast('❌ ' + _authErrMsg(e), '');
+      toast('❌ ' + _authErrMsg(e) + ' [' + (e.code||'?') + ']', '');
       return;
     }
     // Popup failed — fallback to redirect
+    toast('Popup ไม่ได้ กำลังใช้ Redirect แทน...', '🔄');
   }
 
   // Redirect fallback
@@ -3730,7 +4163,7 @@ async function wGoogleSignIn(flow) {
   } catch(e2) {
     btn.disabled = false;
     btn.innerHTML = _GOOGLE_SVG + ' เข้าสู่ระบบด้วย Google';
-    toast('❌ ' + _authErrMsg(e2), '');
+    toast('❌ ' + _authErrMsg(e2) + ' [' + (e2.code||'?') + ']', '');
   }
 }
 
@@ -3751,16 +4184,14 @@ async function _checkRedirectResult() {
     const result = await _auth.getRedirectResult();
     if (!result || !result.user) return;
     const flow = localStorage.getItem('bcm_pendingFlow') || 'create';
-    _wRole = flow; // restore role หลัง redirect กลับมา
     // Restore join code if needed
     if (flow === 'join') {
       const savedCode = localStorage.getItem('bcm_pendingJoinCode');
       if (savedCode) {
         _wJoinCode = savedCode;
+        // Navigate back to join-login step
         wGoStep('join-login');
         document.getElementById('join-room-preview').textContent = '🏸 เข้าร่วมห้อง: ' + savedCode;
-      } else {
-        wGoStep('join');
       }
     } else {
       wGoStep('create');
@@ -3819,6 +4250,12 @@ async function wStartAsUser() {
   localStorage.setItem('bcm_roomCode', _wJoinCode);
   localStorage.setItem('bcm_role', 'user');
   localStorage.setItem('bcm_welcomed', '1');
+  // Save user profile
+  if (_wUser) {
+    localStorage.setItem('bcm_adminPhoto', _wUser.photoURL || '');
+    localStorage.setItem('bcm_adminName', _wUser.displayName || '');
+    localStorage.setItem('bcm_adminEmail', _wUser.email || '');
+  }
   // Try load room data
   const _db = window.db || null;
   if (_db) {
@@ -3837,8 +4274,13 @@ async function wStartAsUser() {
       }
     } catch(e) { /* silent */ }
   }
+  if(!localStorage.getItem('bcm_clubname')) localStorage.setItem('bcm_clubname', getClubName() || 'ก๊วนของฉัน');
   _hideWelcome();
   renderAll();
+  renderRole();
+  _updateProfileAvatar();
+  // เริ่ม real-time sync หลัง join ห้อง
+  if (typeof restartRealtimeSync === 'function') restartRealtimeSync();
   toast('👋 ยินดีต้อนรับ ' + (_wUser.displayName || '') + ' · ห้อง ' + _wJoinCode, '🏸');
 }
 
@@ -3848,29 +4290,23 @@ async function wStartAsAdmin() {
   btn.disabled = true;
   btn.innerHTML = '<span class="w-spinner"></span> กำลังสร้างห้อง...';
   try {
-    // Generate unique code (ไม่ต้องเช็ค Firebase ถ้าไม่มี)
-    const _db = window.db || null;
-    let code = _generateRoomCode();
-    if (_db) {
-      let tries = 0;
-      while (tries < 10) {
-        try {
-          const snap = await Promise.race([
-            _db.ref('rooms/' + code).once('value'),
-            new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
-          ]);
-          if (!snap.exists()) break;
-        } catch(e) { break; }
-        code = _generateRoomCode();
-        tries++;
-      }
-    }
+    // Generate unique code
+    let code, tries = 0;
+    do {
+      code = _generateRoomCode();
+      tries++;
+      if (tries > 10) break;
+      if (typeof db !== 'undefined') {
+        const snap = await db.ref('rooms/' + code).once('value');
+        if (!snap.exists()) break;
+      } else { break; }
+    } while(true);
     _wNewCode = code;
     document.getElementById('display-room-code').textContent = code;
     // Render user chip again in created step
-    const chip2 = document.getElementById('created-user-chip-2');
-    const chip1 = document.getElementById('create-user-chip');
-    if (_wUser && chip2 && chip1) chip2.innerHTML = chip1.innerHTML;
+    if (_wUser) {
+      document.getElementById('created-user-chip-2').innerHTML = document.getElementById('create-user-chip').innerHTML;
+    }
     wGoStep('created');
     setTimeout(() => {
       const ni = document.getElementById('created-club-name');
@@ -3896,6 +4332,13 @@ async function wFinishCreate() {
   localStorage.setItem('bcm_roomCode', _wNewCode);
   localStorage.setItem('bcm_role', 'admin');
   localStorage.setItem('bcm_welcomed', '1');
+  // Save admin profile to localStorage
+  if (_wUser) {
+    localStorage.setItem('bcm_adminUid', _wUser.uid);
+    localStorage.setItem('bcm_adminName', _wUser.displayName || '');
+    localStorage.setItem('bcm_adminEmail', _wUser.email || '');
+    localStorage.setItem('bcm_adminPhoto', _wUser.photoURL || '');
+  }
   // Save room to Firebase
   const _db = window.db || null;
   if (_db) {
@@ -3932,10 +4375,8 @@ function startApp(){
 (function(){
   const name = getClubName();
   const welcomed = localStorage.getItem('bcm_welcomed');
-  const role = localStorage.getItem('bcm_role');
-  if(welcomed && (name || role)){
-    // welcomed แล้ว — ซ่อน welcome screen ไม่ว่าจะมีชื่อก๊วนหรือยัง
-    if(name) setClubName(name);
+  if(name && welcomed){
+    setClubName(name);
     document.getElementById('welcome-screen').style.display='none';
   }
   // Check if previously logged in user
