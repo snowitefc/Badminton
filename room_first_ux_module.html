@@ -1,0 +1,1066 @@
+<!--
+  ╔══════════════════════════════════════════════════════════════════════════════╗
+  ║  ROOM-FIRST UX MODULE — Drop-in replacement for Welcome Screen + Auth flow  ║
+  ║  Replaces: lines 283–625 (CSS) + 907–928 + 1676–1769 + 4752–5116 (JS)      ║
+  ║  Strategy: Anonymous session for members, Google auth only for Admin        ║
+  ╚══════════════════════════════════════════════════════════════════════════════╝
+-->
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 1: REPLACE CSS  (lines 283–421 in original)
+     Find: /* ===== WELCOME SCREEN ===== */
+     Replace with everything below until end of CSS block
+     ═══════════════════════════════════════════════════════ -->
+<style id="room-first-css">
+/* ===== ROOM-FIRST WELCOME SCREEN ===== */
+#welcome-screen {
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+#welcome-screen.hide {
+  animation:welcomeFadeOut .35s ease forwards;
+  pointer-events:none;
+}
+@keyframes welcomeFadeOut {
+  from{opacity:1;transform:scale(1);}
+  to{opacity:0;transform:scale(.97);}
+}
+
+.wcard {
+  background:var(--s1);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:28px 22px 22px;
+  width:100%;max-width:380px;
+  box-shadow:0 24px 64px rgba(0,0,0,.4);
+  animation:up .3s ease;
+}
+
+/* Logo */
+.w-logo {font-size:48px;text-align:center;margin-bottom:4px;line-height:1;}
+.w-title {
+  text-align:center;font-size:20px;font-weight:900;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:2px;letter-spacing:-.3px;
+}
+.w-sub {text-align:center;font-size:12px;color:var(--muted);margin-bottom:20px;}
+
+/* Steps */
+.w-step{display:none;animation:up .22s ease;}
+.w-step.on{display:block;}
+
+/* ── RECENT ROOM CHIP ── */
+.w-recent {
+  display:none;
+  background:var(--s2);border:1.5px solid var(--accent);
+  border-radius:12px;padding:11px 14px;margin-bottom:14px;
+  cursor:pointer;transition:all .18s;
+  animation:up .25s ease;
+}
+.w-recent:hover{background:var(--s3);border-color:var(--accent2);}
+.w-recent-label {font-size:9px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
+.w-recent-row {display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.w-recent-club {font-size:14px;font-weight:800;color:var(--text);}
+.w-recent-code {font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);font-weight:700;}
+.w-recent-arrow {font-size:13px;color:var(--muted);}
+
+/* ── ROOM CODE INPUT — OTP style ── */
+.w-room-wrap {position:relative;margin-bottom:8px;}
+.w-room-input {
+  width:100%;
+  background:var(--s2);border:2px solid var(--border);
+  color:var(--text);font-family:'IBM Plex Mono',monospace;
+  font-size:28px;font-weight:800;
+  padding:14px;border-radius:12px;outline:none;
+  transition:border-color .18s;
+  text-align:center;letter-spacing:10px;
+  -webkit-appearance:none;appearance:none;
+  caret-color:var(--accent);
+}
+.w-room-input:focus{border-color:var(--accent);}
+.w-room-input.error{border-color:var(--red);animation:shake .3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.w-room-hint {font-size:11px;color:var(--muted);text-align:center;margin-bottom:16px;min-height:16px;}
+
+/* ── PRIMARY BUTTON ── */
+.w-btn {
+  width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#000;font-family:'Kanit',sans-serif;font-size:15px;font-weight:800;
+  padding:13px;border-radius:11px;border:none;cursor:pointer;
+  transition:opacity .18s,transform .18s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-bottom:10px;
+}
+.w-btn:hover{opacity:.88;transform:translateY(-1px);}
+.w-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.w-btn-outline {
+  width:100%;background:none;border:1.5px solid var(--border);
+  color:var(--text);font-family:'Kanit',sans-serif;font-size:14px;font-weight:700;
+  padding:11px;border-radius:11px;cursor:pointer;
+  transition:border-color .18s,color .18s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-bottom:8px;
+}
+.w-btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+
+.w-divider {
+  display:flex;align-items:center;gap:10px;margin:14px 0;
+}
+.w-divider::before,.w-divider::after {
+  content:'';flex:1;height:1px;background:var(--border);
+}
+.w-divider span{font-size:11px;color:var(--muted);white-space:nowrap;}
+
+/* ── NICKNAME INPUT ── */
+.w-label {
+  font-size:11px;font-weight:700;color:var(--dim);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block;
+}
+.w-input {
+  width:100%;background:var(--s2);border:1.5px solid var(--border);
+  color:var(--text);font-family:'Kanit',sans-serif;font-size:16px;font-weight:600;
+  padding:11px 14px;border-radius:10px;outline:none;
+  transition:border-color .18s;margin-bottom:14px;
+}
+.w-input:focus{border-color:var(--accent);}
+
+/* ── CLAIM GRID (Who are you?) ── */
+.w-claim-grid {
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;
+  max-height:200px;overflow-y:auto;margin-bottom:14px;padding:2px;
+}
+.w-claim-card {
+  background:var(--s2);border:1.5px solid var(--border);
+  border-radius:11px;padding:10px 6px;cursor:pointer;
+  text-align:center;transition:all .18s;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.w-claim-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.w-claim-card.selected{border-color:var(--accent);background:rgba(240,192,64,.1);}
+.w-claim-icon{font-size:26px;line-height:1;}
+.w-claim-name{font-size:10px;font-weight:700;line-height:1.3;word-break:break-word;}
+
+/* ── ADMIN CREATE FLOW ── */
+.w-room-display {
+  text-align:center;padding:16px;background:var(--s2);border:2px solid var(--accent);
+  border-radius:14px;margin:10px 0 16px;
+}
+.w-room-val {
+  font-family:'IBM Plex Mono',monospace;font-size:40px;font-weight:900;
+  letter-spacing:12px;color:var(--accent);
+  text-shadow:0 0 20px rgba(240,192,64,.25);padding-left:10px;
+}
+.w-room-val-label{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* ── GOOGLE BUTTON ── */
+.w-btn-google {
+  width:100%;background:#fff;border:1.5px solid #dadce0;
+  color:#3c4043;font-family:'Kanit',sans-serif;font-size:14px;font-weight:700;
+  padding:11px;border-radius:10px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:box-shadow .18s;box-shadow:0 1px 3px rgba(0,0,0,.1);
+  margin-bottom:10px;
+}
+.w-btn-google:hover{box-shadow:0 2px 8px rgba(0,0,0,.18);}
+.w-btn-google:disabled{opacity:.5;cursor:not-allowed;}
+
+/* ── BACK LINK ── */
+.w-back {
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  background:none;border:none;color:var(--muted);font-family:'Kanit',sans-serif;
+  font-size:12px;font-weight:600;cursor:pointer;padding:6px;
+  width:100%;transition:color .18s;margin-top:4px;
+}
+.w-back:hover{color:var(--text);}
+
+/* ── SPINNER ── */
+.w-spin {
+  display:inline-block;width:18px;height:18px;
+  border:2px solid rgba(0,0,0,.15);border-top-color:#000;
+  border-radius:50%;animation:spin .6s linear infinite;
+}
+.w-spin.light{border-color:rgba(255,255,255,.2);border-top-color:#fff;}
+
+/* ── LOADING STATE ── */
+.w-loading-dot {
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:var(--accent);animation:wdot 1.2s ease-in-out infinite;margin:0 3px;
+}
+.w-loading-dot:nth-child(2){animation-delay:.2s;}
+.w-loading-dot:nth-child(3){animation-delay:.4s;}
+@keyframes wdot{0%,80%,100%{transform:scale(0.6);opacity:.4}40%{transform:scale(1.1);opacity:1}}
+
+/* Responsive: full-screen card on very small screens */
+@media(max-width:380px){
+  .wcard{border-radius:14px;padding:22px 16px 18px;}
+  .w-room-input{font-size:24px;letter-spacing:8px;}
+}
+</style>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 2: REPLACE WELCOME SCREEN HTML
+     Find: <!-- ===== WELCOME SCREEN ===== -->  (line 525)
+     Replace until </div> at line 625
+     ═══════════════════════════════════════════════════════ -->
+
+<div id="welcome-screen">
+  <div class="wcard">
+    <div class="w-logo">🏸</div>
+    <div class="w-title" id="w-title">SwFC</div>
+    <div class="w-sub" id="w-sub">Badminton Club Manager</div>
+
+    <!-- ── STEP: LOADING (initial auth check) ── -->
+    <div class="w-step on" id="ws-loading">
+      <div style="text-align:center;padding:28px 0 20px;">
+        <span class="w-loading-dot"></span>
+        <span class="w-loading-dot"></span>
+        <span class="w-loading-dot"></span>
+        <div style="font-size:12px;color:var(--muted);margin-top:12px;">กำลังโหลด...</div>
+      </div>
+    </div>
+
+    <!-- ── STEP: HOME — Room Code Entry ── -->
+    <div class="w-step" id="ws-home">
+      <!-- Recent room quick-rejoin -->
+      <div class="w-recent" id="w-recent-chip" onclick="wRejoinRecent()">
+        <div class="w-recent-label">🕐 เข้าล่าสุด</div>
+        <div class="w-recent-row">
+          <div>
+            <div class="w-recent-club" id="w-recent-club">—</div>
+            <div class="w-recent-code" id="w-recent-code">—</div>
+          </div>
+          <span class="w-recent-arrow">แตะเพื่อเข้า →</span>
+        </div>
+      </div>
+
+      <!-- OTP-style room code input -->
+      <div class="w-room-wrap">
+        <input
+          class="w-room-input"
+          id="w-code-input"
+          type="tel"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          placeholder="1234"
+          maxlength="4"
+          autocomplete="off"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'');wOnCodeInput(this.value)"
+          onkeydown="if(event.key==='Enter') wEnterRoom()"
+        >
+      </div>
+      <div class="w-room-hint" id="w-code-hint">กรอกรหัสห้อง 4 หลัก</div>
+
+      <button class="w-btn" id="w-enter-btn" onclick="wEnterRoom()" disabled>
+        🏸 เข้าร่วม
+      </button>
+
+      <div class="w-divider"><span>หรือ</span></div>
+
+      <button class="w-btn-outline" onclick="wGoStep('create-auth')">
+        ⚙️ สร้างก๊วนใหม่ (Admin)
+      </button>
+    </div>
+
+    <!-- ── STEP: NICKNAME — after room code verified ── -->
+    <div class="w-step" id="ws-nickname">
+      <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:4px;">ห้อง</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:900;color:var(--accent);letter-spacing:4px;" id="ws-nick-code">—</span>
+        <span style="font-size:13px;font-weight:700;color:var(--text);" id="ws-nick-club"></span>
+      </div>
+
+      <!-- If members exist: show "Who are you?" claim grid -->
+      <div id="ws-claim-section" style="display:none;">
+        <label class="w-label">คุณคือใคร?</label>
+        <div class="w-claim-grid" id="ws-claim-grid"></div>
+        <button class="w-btn" id="ws-claim-btn" onclick="wClaimAndEnter()" disabled>
+          ✅ เข้าร่วม
+        </button>
+        <button class="w-btn-outline" onclick="wShowNickInput()">
+          👤 ใช้ชื่อใหม่ (Guest)
+        </button>
+      </div>
+
+      <!-- Nickname input (new player / guest) -->
+      <div id="ws-nick-section" style="display:none;">
+        <label class="w-label">ชื่อเล่น</label>
+        <input class="w-input" id="ws-nick-input" type="text"
+          placeholder="เช่น Min, Arm, Wasarun..."
+          maxlength="20"
+          onkeydown="if(event.key==='Enter') wNickEnter()">
+        <button class="w-btn" onclick="wNickEnter()">
+          ✅ เข้าร่วม
+        </button>
+        <div id="ws-claim-toggle-link" style="display:none;text-align:center;margin-bottom:8px;">
+          <button class="w-back" onclick="wShowClaimGrid()">← กลับเลือกชื่อ</button>
+        </div>
+      </div>
+
+      <button class="w-back" onclick="wGoStep('home')">← เปลี่ยนรหัสห้อง</button>
+    </div>
+
+    <!-- ── STEP: CREATE ADMIN AUTH ── -->
+    <div class="w-step" id="ws-create-auth">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">สร้างก๊วนใหม่</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">Admin ต้องยืนยันตัวตนด้วย Google</div>
+      <button class="w-btn-google" id="w-admin-google-btn" onclick="wAdminGoogleSignIn()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        เข้าสู่ระบบด้วย Google
+      </button>
+      <button class="w-back" onclick="wGoStep('home')">← ยกเลิก</button>
+    </div>
+
+    <!-- ── STEP: CREATE CLUB DETAILS (after Google auth) ── -->
+    <div class="w-step" id="ws-create-club">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--s2);border-radius:8px;margin-bottom:14px;" id="ws-admin-chip">
+        <span style="font-size:18px;">👤</span>
+        <div>
+          <div style="font-size:12px;font-weight:700;" id="ws-admin-name">—</div>
+          <div style="font-size:10px;color:var(--muted);" id="ws-admin-email">—</div>
+        </div>
+      </div>
+      <label class="w-label">ชื่อก๊วน</label>
+      <input class="w-input" id="ws-club-name-input" type="text"
+        placeholder="เช่น SnowiteFC..."
+        maxlength="30"
+        onkeydown="if(event.key==='Enter') wCreateClub()">
+      <button class="w-btn" onclick="wCreateClub()">🚀 สร้างก๊วน</button>
+    </div>
+
+    <!-- ── STEP: CREATED — Show Room Code ── -->
+    <div class="w-step" id="ws-created">
+      <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:4px;">รหัสห้องของก๊วนคุณ</div>
+      <div class="w-room-display">
+        <div class="w-room-val" id="ws-new-code">—</div>
+        <div class="w-room-val-label">แชร์รหัสนี้ให้สมาชิก</div>
+      </div>
+      <button class="w-btn" onclick="wEnterAsAdmin()">🏸 เริ่มใช้งาน</button>
+      <button class="w-btn-outline" onclick="wCopyNewRoomCode()">📋 คัดลอกรหัสห้อง</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 3: REPLACE WELCOME JS
+     Find all occurrences of the old welcome functions.
+     Replace the block starting at _wFillLastRoom (line ~1676)
+     through the old _afterAuth (line ~1768)
+     Also replaces the big wGoStep/wJoinNext/wStartAsUser/
+     wStartAsAdmin/wFinishCreate block at the bottom
+     (lines ~4752–5116)
+     ═══════════════════════════════════════════════════════ -->
+
+<script id="room-first-js">
+// ═══════════════════════════════════════════════════════════════════
+//  ROOM-FIRST AUTH MODULE
+//  Philosophy: Enter room → identify yourself → play.
+//  Google login is ONLY required for Admin (room creation).
+//  Members use Firebase Anonymous auth + a localStorage nickname.
+// ═══════════════════════════════════════════════════════════════════
+
+// ── internal state ──────────────────────────────────────────────
+var _rfJoinCode    = '';   // room code being joined
+var _rfNewCode     = '';   // room code just created
+var _rfClaimedId   = null; // member id selected in claim grid
+var _rfUser        = null; // Firebase user (anonymous or Google)
+
+// ── Step router ──────────────────────────────────────────────────
+function wGoStep(id) {
+  document.querySelectorAll('.w-step').forEach(el => el.classList.remove('on'));
+  const el = document.getElementById('ws-' + id);
+  if (el) el.classList.add('on');
+  if (id === 'home') _rfShowRecentChip();
+}
+
+// ── Recent room chip ─────────────────────────────────────────────
+function _rfShowRecentChip() {
+  const code = localStorage.getItem('bcm_last_room_code');
+  const club = localStorage.getItem('bcm_last_club_name');
+  const chip = document.getElementById('w-recent-chip');
+  if (!chip || !code) return;
+  document.getElementById('w-recent-club').textContent = club || 'ก๊วน';
+  document.getElementById('w-recent-code').textContent = 'รหัส: ' + code;
+  chip.style.display = 'block';
+  // Auto-fill input
+  const inp = document.getElementById('w-code-input');
+  if (inp && !inp.value) {
+    inp.value = code;
+    wOnCodeInput(code);
+  }
+}
+
+function wRejoinRecent() {
+  const code = localStorage.getItem('bcm_last_room_code');
+  if (!code) return;
+  const inp = document.getElementById('w-code-input');
+  if (inp) { inp.value = code; wOnCodeInput(code); }
+  wEnterRoom();
+}
+
+// ── Room code input live validation ──────────────────────────────
+function wOnCodeInput(val) {
+  const btn = document.getElementById('w-enter-btn');
+  const hint = document.getElementById('w-code-hint');
+  if (val.length === 4) {
+    if (btn) btn.disabled = false;
+    if (hint) { hint.textContent = ''; hint.style.color = ''; }
+  } else {
+    if (btn) btn.disabled = true;
+    if (hint) { hint.textContent = 'กรอกรหัสห้อง 4 หลัก'; hint.style.color = ''; }
+  }
+}
+
+// ── ENTER ROOM — main flow for members ───────────────────────────
+async function wEnterRoom() {
+  const inp = document.getElementById('w-code-input');
+  const code = (inp ? inp.value : '').trim();
+  if (!code || !/^\d{4}$/.test(code)) {
+    inp && inp.classList.add('error');
+    setTimeout(() => inp && inp.classList.remove('error'), 400);
+    return;
+  }
+
+  const btn = document.getElementById('w-enter-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="w-spin"></span> กำลังตรวจสอบ...'; }
+
+  try {
+    // 1. Verify room exists
+    const _db = window.db;
+    let roomExists = true;
+    let roomData = null;
+    if (_db) {
+      try {
+        const snap = await Promise.race([
+          _db.ref('rooms/' + code).once('value'),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+        ]);
+        roomExists = snap.exists();
+        if (roomExists) roomData = snap.val();
+      } catch(e) {
+        // Timeout or network — allow entry optimistically
+        roomExists = true;
+      }
+    }
+
+    if (!roomExists) {
+      const hint = document.getElementById('w-code-hint');
+      if (hint) { hint.textContent = '❌ ไม่พบรหัสห้องนี้'; hint.style.color = 'var(--red)'; }
+      inp && inp.classList.add('error');
+      setTimeout(() => inp && inp.classList.remove('error'), 400);
+      if (btn) { btn.disabled = false; btn.innerHTML = '🏸 เข้าร่วม'; }
+      return;
+    }
+
+    _rfJoinCode = code;
+
+    // 2. Load room data & proceed to identify step
+    if (roomData) {
+      const toArr = v => !v ? [] : Array.isArray(v) ? v : Object.values(v);
+      const st = roomData.state || {};
+      S.members     = toArr(st.members);
+      S.matches     = toArr(st.matches);
+      S.finance     = toArr(st.finance);
+      S.decayEvents = toArr(st.decayEvents);
+      S.seasons     = toArr(st.seasons);
+      if (st.rsvp)        S.rsvp = st.rsvp;
+      if (st.seasonGoal)  S.seasonGoal = st.seasonGoal;
+      if (st.rulesConfig) Object.assign(RC, st.rulesConfig);
+      if (roomData.clubName) {
+        setClubName(roomData.clubName);
+        _sSet('bcm_clubname', roomData.clubName);
+      }
+    }
+
+    // 3. Go to nickname/claim step
+    _rfShowNicknameStep(code);
+
+  } catch(e) {
+    toast('เกิดข้อผิดพลาด: ' + (e.message || e), '❌');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '🏸 เข้าร่วม'; }
+  }
+}
+
+function _rfShowNicknameStep(code) {
+  // Update UI labels
+  const codeEl = document.getElementById('ws-nick-code');
+  const clubEl = document.getElementById('ws-nick-club');
+  if (codeEl) codeEl.textContent = code;
+  if (clubEl) clubEl.textContent = getClubName() || '';
+
+  const claimSection = document.getElementById('ws-claim-section');
+  const nickSection  = document.getElementById('ws-nick-section');
+  const claimGrid    = document.getElementById('ws-claim-grid');
+  const toggleLink   = document.getElementById('ws-claim-toggle-link');
+
+  // Check if there are unclaimed members to show the "Who are you?" grid
+  const unclaimed = S.members.filter(m => !m.sessionId);
+  // Also check if user already has a saved session for this room
+  const savedSession = _rfGetSavedSession(code);
+
+  if (savedSession) {
+    // Returning user — auto-enter
+    _rfEnterWithSession(code, savedSession);
+    return;
+  }
+
+  if (unclaimed.length > 0 && claimGrid) {
+    // Show claim grid
+    claimGrid.innerHTML = unclaimed.map(m => {
+      const icon = m.icon || '👤';
+      return `<div class="w-claim-card" id="wcc-${m.id}" onclick="wSelectClaim(${m.id})">
+        <div class="w-claim-icon">${icon}</div>
+        <div class="w-claim-name">${esc(m.name)}</div>
+      </div>`;
+    }).join('');
+    // Guest option
+    claimGrid.innerHTML += `<div class="w-claim-card" id="wcc-guest" onclick="wShowNickInput()">
+      <div class="w-claim-icon">👤</div>
+      <div class="w-claim-name">Guest</div>
+    </div>`;
+
+    if (claimSection) claimSection.style.display = 'block';
+    if (nickSection) nickSection.style.display = 'none';
+    if (toggleLink) toggleLink.style.display = 'none';
+  } else {
+    // No members yet, or all claimed — go straight to nick input
+    if (claimSection) claimSection.style.display = 'none';
+    if (nickSection)  nickSection.style.display = 'block';
+  }
+
+  wGoStep('nickname');
+}
+
+function wSelectClaim(id) {
+  _rfClaimedId = id;
+  document.querySelectorAll('.w-claim-card').forEach(el => el.classList.remove('selected'));
+  const card = document.getElementById('wcc-' + id);
+  if (card) card.classList.add('selected');
+  const btn = document.getElementById('ws-claim-btn');
+  if (btn) btn.disabled = false;
+}
+
+function wShowNickInput() {
+  _rfClaimedId = null;
+  const claimSection = document.getElementById('ws-claim-section');
+  const nickSection  = document.getElementById('ws-nick-section');
+  const toggleLink   = document.getElementById('ws-claim-toggle-link');
+  const hasClaim     = S.members.filter(m => !m.sessionId).length > 0;
+  if (claimSection) claimSection.style.display = 'none';
+  if (nickSection)  nickSection.style.display = 'block';
+  if (toggleLink && hasClaim) toggleLink.style.display = 'block';
+  const inp = document.getElementById('ws-nick-input');
+  if (inp) setTimeout(() => inp.focus(), 150);
+}
+
+function wShowClaimGrid() {
+  const claimSection = document.getElementById('ws-claim-section');
+  const nickSection  = document.getElementById('ws-nick-section');
+  if (claimSection) claimSection.style.display = 'block';
+  if (nickSection)  nickSection.style.display = 'none';
+}
+
+async function wClaimAndEnter() {
+  if (!_rfClaimedId) { toast('กรุณาเลือกชื่อก่อน', '⚠️'); return; }
+  const m = gm(_rfClaimedId);
+  if (!m) return;
+  // Generate session id and attach to member
+  const sessionId = _rfMakeSessionId();
+  m.sessionId = sessionId;
+  _rfSaveSession(_rfJoinCode, sessionId, m.name, m.id);
+  await _rfFinishJoin(_rfJoinCode, m.name, 'user', sessionId);
+}
+
+async function wNickEnter() {
+  const inp = document.getElementById('ws-nick-input');
+  const nick = (inp ? inp.value.trim() : '');
+  if (!nick) {
+    if (inp) { inp.style.borderColor = 'var(--red)'; setTimeout(() => inp.style.borderColor = '', 1000); }
+    return;
+  }
+  const sessionId = _rfMakeSessionId();
+  _rfSaveSession(_rfJoinCode, sessionId, nick, null);
+  await _rfFinishJoin(_rfJoinCode, nick, 'user', sessionId);
+}
+
+// ── Session helpers ──────────────────────────────────────────────
+function _rfMakeSessionId() {
+  return 'sid_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+}
+
+function _rfSaveSession(code, sessionId, nick, memberId) {
+  // Per-room session stored in localStorage
+  const sessions = JSON.parse(localStorage.getItem('bcm_sessions') || '{}');
+  sessions[code] = { sessionId, nick, memberId, ts: Date.now() };
+  localStorage.setItem('bcm_sessions', JSON.stringify(sessions));
+  // Also persist last room
+  localStorage.setItem('bcm_last_room_code', code);
+  localStorage.setItem('bcm_last_club_name', getClubName() || '');
+}
+
+function _rfGetSavedSession(code) {
+  try {
+    const sessions = JSON.parse(localStorage.getItem('bcm_sessions') || '{}');
+    const s = sessions[code];
+    if (!s) return null;
+    // Expire sessions older than 7 days (casual app — not too aggressive)
+    if (Date.now() - s.ts > 7 * 24 * 60 * 60 * 1000) return null;
+    return s;
+  } catch(e) { return null; }
+}
+
+function _rfClearSession(code) {
+  try {
+    const sessions = JSON.parse(localStorage.getItem('bcm_sessions') || '{}');
+    delete sessions[code];
+    localStorage.setItem('bcm_sessions', JSON.stringify(sessions));
+  } catch(e) {}
+}
+
+// ── Firebase Anonymous Auth + enter room ────────────────────────
+async function _rfFinishJoin(code, nick, role, sessionId) {
+  _sSet('bcm_roomCode', code);
+  _sSet('bcm_role', role);
+  _sSet('bcm_welcomed', '1');
+  // Store nickname for profile display
+  _sSet('bcm_adminName', nick);
+  // Store session id in _session for this tab
+  window._session.myUid = sessionId;
+
+  // Firebase anonymous auth (no account required, just a UID for presence)
+  const _auth = window._auth;
+  if (_auth && !_auth.currentUser) {
+    try {
+      await _auth.signInAnonymously();
+    } catch(e) {
+      // Anonymous auth may be disabled — continue without it
+      console.warn('[BCM] Anonymous auth failed:', e?.code);
+    }
+  }
+
+  // If user claimed a member, attach presence/sessionId
+  if (_rfClaimedId) {
+    const m = gm(_rfClaimedId);
+    if (m && !m.sessionId) {
+      m.sessionId = sessionId;
+      // Sync to Firebase so other clients see the claim
+      try {
+        const _db = window.db;
+        if (_db && code) {
+          await _db.ref('rooms/' + code + '/state/members').once('value').then(snap => {
+            // lightweight: just update this member's sessionId
+          });
+        }
+      } catch(e) {}
+    }
+    // Store myUid as memberId for role lookups
+    window._session.myUid = sessionId;
+  }
+
+  _wSaveLastRoom(code, getClubName() || '');
+  _hideWelcome();
+  _afterAuth();
+  if (typeof restartRealtimeSync === 'function') restartRealtimeSync();
+
+  const greeting = nick ? ('ยินดีต้อนรับ ' + nick + ' 🏸') : ('เข้าห้อง ' + code + ' แล้ว 🏸');
+  toast(greeting, '🏸');
+}
+
+// ── Leave Room ───────────────────────────────────────────────────
+// Called from "Leave Room" in profile menu (replaces profileLogout)
+function profileLeaveRoom() {
+  const code = _sGet('bcm_roomCode');
+  const name = _sGet('bcm_adminName') || 'คุณ';
+  document.getElementById('profile-menu').style.display = 'none';
+
+  // Soft leave — show undo toast
+  _rfClearSession(code || '');
+  _sClear();
+
+  // Sign out anonymous user silently
+  const _auth = window._auth;
+  if (_auth) _auth.signOut().catch(() => {});
+
+  toast('ออกจากห้องแล้ว — กลับมาเข้าได้ทุกเมื่อ', '👋', () => {
+    // UNDO: stay in room
+    _rfSaveSession(code || '', _rfMakeSessionId(), name, null);
+    location.reload();
+  });
+
+  setTimeout(() => location.reload(), 3800);
+}
+
+// ── ADMIN: Create Room Flow ───────────────────────────────────────
+async function wAdminGoogleSignIn() {
+  const btn = document.getElementById('w-admin-google-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="w-spin" style="border-top-color:#4285F4;border-color:rgba(0,0,0,.15);"></span> กำลังเชื่อมต่อ...'; }
+
+  const _auth = window._auth;
+  if (!_auth) {
+    toast('Firebase Auth ยังไม่พร้อม', '❌');
+    if (btn) btn.disabled = false;
+    return;
+  }
+
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+
+  try {
+    const result = await _auth.signInWithPopup(provider);
+    _rfUser = result.user;
+    _wUser = result.user;
+    // Show create club step
+    const nameEl  = document.getElementById('ws-admin-name');
+    const emailEl = document.getElementById('ws-admin-email');
+    if (nameEl)  nameEl.textContent  = result.user.displayName || '—';
+    if (emailEl) emailEl.textContent = result.user.email || '—';
+    wGoStep('create-club');
+    setTimeout(() => document.getElementById('ws-club-name-input')?.focus(), 150);
+  } catch(e) {
+    const silent = ['auth/popup-closed-by-user','auth/cancelled-popup-request'];
+    if (!silent.includes(e.code)) {
+      toast('❌ ' + (e.message || e.code), '');
+    }
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> เข้าสู่ระบบด้วย Google`;
+    }
+  }
+}
+
+async function wCreateClub() {
+  const name = (document.getElementById('ws-club-name-input')?.value || '').trim();
+  if (!name) {
+    const inp = document.getElementById('ws-club-name-input');
+    if (inp) { inp.style.borderColor = 'var(--red)'; setTimeout(() => inp.style.borderColor = '', 1000); inp.focus(); }
+    return;
+  }
+
+  const user = _rfUser || _wUser;
+  if (!user) { toast('กรุณา Sign in ก่อน', '⚠️'); return; }
+
+  // Generate unique room code
+  let code, tries = 0;
+  const _db = window.db;
+  do {
+    code = String(Math.floor(1000 + Math.random() * 9000));
+    tries++;
+    if (tries > 10) break;
+    if (_db) {
+      const snap = await _db.ref('rooms/' + code).once('value');
+      if (!snap.exists()) break;
+    } else { break; }
+  } while(true);
+
+  _rfNewCode = code;
+
+  // Save to Firebase
+  if (_db) {
+    try {
+      await _db.ref('rooms/' + code).set({
+        createdAt: Date.now(),
+        adminUid:  user.uid,
+        adminName: user.displayName || '',
+        clubName:  name,
+        state: { ...S, clubName: name, lastUpdatedAt: Date.now() },
+      });
+      await _db.ref('users/' + user.uid).set({
+        roomCode: code, role: 'admin',
+        name: user.displayName || '', email: user.email || '',
+        joinedAt: Date.now(),
+      });
+      await _db.ref('adminRooms/' + user.uid).set(code);
+    } catch(e) {
+      console.error('[BCM] create room error:', e);
+    }
+  }
+
+  setClubName(name);
+
+  // Show success step
+  const codeEl = document.getElementById('ws-new-code');
+  if (codeEl) codeEl.textContent = code;
+  wGoStep('created');
+}
+
+function wCopyNewRoomCode() {
+  navigator.clipboard.writeText(_rfNewCode).then(() => {
+    toast('คัดลอกรหัส ' + _rfNewCode + ' แล้ว ✅', '✅');
+  }).catch(() => toast(_rfNewCode, '🔑'));
+}
+
+async function wEnterAsAdmin() {
+  const user = _rfUser || _wUser;
+  const code = _rfNewCode;
+  if (!user || !code) return;
+
+  _sSet('bcm_roomCode', code);
+  _sSet('bcm_role', 'admin');
+  _sSet('bcm_welcomed', '1');
+  _sSet('bcm_adminUid', user.uid);
+  _sSet('bcm_adminName', user.displayName || '');
+  _sSet('bcm_adminEmail', user.email || '');
+  _sSet('bcm_adminPhoto', user.photoURL || '');
+  _sSet('bcm_myUid', user.uid);
+
+  _wUser = user;
+  _wSaveLastRoom(code, getClubName() || '');
+  _rfSaveSession(code, user.uid, user.displayName || 'Admin', null);
+
+  _hideWelcome();
+  _afterAuth();
+  if (typeof restartRealtimeSync === 'function') restartRealtimeSync();
+  setTimeout(() => _autoAddMemberFromProfile(user), 500);
+  toast('🎉 สร้างก๊วน "' + getClubName() + '" เรียบร้อย! รหัสห้อง: ' + code, '✅');
+}
+
+// ── Returning Admin — bypass welcome screen ──────────────────────
+// Called by onAuthStateChanged when Google user is detected
+async function _rfHandleReturningAdmin(user) {
+  _wUser = user;
+  const _db = window.db;
+  const ws  = document.getElementById('welcome-screen');
+
+  try {
+    const userSnap = await Promise.race([
+      _db.ref('users/' + user.uid).once('value'),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 6000))
+    ]);
+    const userData = userSnap.val();
+    if (userData && userData.roomCode && userData.role === 'admin') {
+      const code = userData.roomCode;
+      _sSet('bcm_roomCode', code);
+      _sSet('bcm_role', 'admin');
+      _sSet('bcm_myUid', user.uid);
+      _sSet('bcm_adminUid', user.uid);
+      _sSet('bcm_adminName', user.displayName || '');
+      _sSet('bcm_adminEmail', user.email || '');
+      _sSet('bcm_adminPhoto', user.photoURL || '');
+
+      // Load room data
+      const roomSnap = await _db.ref('rooms/' + code).once('value');
+      const roomData = roomSnap.val();
+      if (roomData) {
+        const toArr = v => !v ? [] : Array.isArray(v) ? v : Object.values(v);
+        if (roomData.clubName) { setClubName(roomData.clubName); _sSet('bcm_clubname', roomData.clubName); }
+        const st = roomData.state || {};
+        S.members     = toArr(st.members);
+        S.matches     = toArr(st.matches);
+        S.finance     = toArr(st.finance);
+        S.decayEvents = toArr(st.decayEvents);
+        S.seasons     = toArr(st.seasons);
+        if (st.rulesConfig) Object.assign(RC, st.rulesConfig);
+      }
+      _wSaveLastRoom(code, getClubName() || '');
+      if (ws) { ws.classList.add('hide'); setTimeout(() => ws.style.display = 'none', 420); }
+      _afterAuth();
+      if (typeof restartRealtimeSync === 'function') setTimeout(restartRealtimeSync, 300);
+      return true; // handled
+    }
+  } catch(e) {
+    console.warn('[BCM] returning admin lookup error:', e?.message);
+  }
+  return false; // not handled — show home
+}
+
+// ── Replace old profileLogout with leave room ────────────────────
+// (profileLogout is referenced in existing HTML; redirect it)
+function profileLogout() { profileLeaveRoom(); }
+
+// ── Backward-compat stubs for old function names ─────────────────
+function wStep0SignIn() { wGoStep('create-auth'); }
+function wSignOutAndReset() { _sClear(); if (window._auth) window._auth.signOut().catch(()=>{}); location.reload(); }
+function wResetSession() { if (!confirm('ล้างข้อมูลทั้งหมดและเริ่มใหม่?')) return; wSignOutAndReset(); }
+function wContinueWithGoogle() { wGoStep('create-auth'); } // old main screen google btn
+function wSelectRole() {} // removed
+function _wShowLastRoomHint() { _rfShowRecentChip(); }
+function _wFillLastRoom() {
+  const code = localStorage.getItem('bcm_last_room_code') || '';
+  const inp = document.getElementById('w-code-input');
+  if (inp && code) { inp.value = code; wOnCodeInput(code); }
+}
+function _wSaveLastRoom(code, club) {
+  if (code) localStorage.setItem('bcm_last_room_code', code);
+  if (club) localStorage.setItem('bcm_last_club_name', club);
+}
+
+// ── _afterAuth (identical to original) ──────────────────────────
+let _step0SignedInDone = false;
+function _afterAuth() {
+  _authResolved = true;
+  _updateProfileAvatar();
+  renderAll();
+}
+
+function _wStep0SignedIn(user) { _wUser = user; _updateProfileAvatar(); }
+
+// ── Detect returning member from localStorage ────────────────────
+// Runs before Firebase is ready (instant UX on reload)
+(function _rfRestoreLocalSession() {
+  const code = localStorage.getItem('bcm_last_room_code');
+  if (!code) return;
+  const sessions = JSON.parse(localStorage.getItem('bcm_sessions') || '{}');
+  const s = sessions[code];
+  if (!s) return;
+  if (Date.now() - s.ts > 7 * 24 * 60 * 60 * 1000) return; // expired
+
+  // Restore session state immediately — Firebase will sync in _startRealtimeSync
+  _sSet('bcm_roomCode', code);
+  _sSet('bcm_role', 'user');
+  _sSet('bcm_welcomed', '1');
+  _sSet('bcm_adminName', s.nick || '');
+  window._session.myUid = s.sessionId || '';
+})();
+
+// ── Deep-link support: swfc.app/4831 ────────────────────────────
+(function _rfCheckDeepLink() {
+  const path = window.location.pathname.replace('/', '').trim();
+  if (/^\d{4}$/.test(path)) {
+    const inp = document.getElementById('w-code-input');
+    if (inp) { inp.value = path; wOnCodeInput(path); }
+  }
+})();
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 4: UPDATED onAuthStateChanged block
+     Find:  _auth.onAuthStateChanged(async function(user) {
+     Replace the ENTIRE onAuthStateChanged callback
+     (keep everything else in the Firebase init block)
+     ═══════════════════════════════════════════════════════ -->
+
+<script id="room-first-auth-observer">
+/*
+  NEW onAuthStateChanged — replaces the old one at ~line 4334.
+
+  Decision tree:
+  A) No user at all  → check localStorage session → show home or enter room silently
+  B) Anonymous user  → already handled by _rfRestoreLocalSession / _rfFinishJoin
+  C) Google user     → check if admin, bypass welcome if yes
+*/
+(function _rfPatchAuthObserver() {
+  // Wait for _auth to be ready (it's set by the Firebase init block above this)
+  function _patch() {
+    if (!window._auth) { setTimeout(_patch, 100); return; }
+    window._auth.onAuthStateChanged(async function(user) {
+      _authResolved = true;
+      const ws = document.getElementById('welcome-screen');
+
+      // ── Case A: No user ──────────────────────────────────────
+      if (!user) {
+        // Check if we have a valid localStorage session (member flow)
+        const savedCode = localStorage.getItem('bcm_last_room_code');
+        const sessions  = JSON.parse(localStorage.getItem('bcm_sessions') || '{}');
+        const s = savedCode && sessions[savedCode];
+        const isValid = s && (Date.now() - s.ts < 7 * 24 * 60 * 60 * 1000);
+
+        if (isValid && savedCode) {
+          // Restore member session silently — no Google auth needed
+          _sSet('bcm_roomCode', savedCode);
+          _sSet('bcm_role', 'user');
+          _sSet('bcm_welcomed', '1');
+          _sSet('bcm_adminName', s.nick || '');
+          window._session.myUid = s.sessionId || '';
+          if (ws) { ws.classList.add('hide'); setTimeout(() => ws.style.display = 'none', 420); }
+          _afterAuth();
+          if (typeof restartRealtimeSync === 'function') setTimeout(restartRealtimeSync, 300);
+        } else {
+          // No session — show welcome home
+          if (ws) { ws.style.display = ''; ws.classList.remove('hide'); }
+          wGoStep('home');
+        }
+        return;
+      }
+
+      // ── Case B: Anonymous user ───────────────────────────────
+      if (user.isAnonymous) {
+        // Already handled by _rfFinishJoin — just mark auth resolved
+        _wUser = user;
+        const savedCode = _sGet('bcm_roomCode');
+        if (savedCode && _sGet('bcm_welcomed')) {
+          if (ws) { ws.classList.add('hide'); setTimeout(() => ws.style.display = 'none', 420); }
+          _afterAuth();
+          if (typeof restartRealtimeSync === 'function') setTimeout(restartRealtimeSync, 200);
+        } else {
+          if (ws) { ws.style.display = ''; ws.classList.remove('hide'); }
+          wGoStep('home');
+        }
+        return;
+      }
+
+      // ── Case C: Google user (Admin) ──────────────────────────
+      _wUser = user;
+      const _db = window.db;
+      if (_db) {
+        const handled = await _rfHandleReturningAdmin(user);
+        if (handled) return;
+      }
+
+      // Google user but no room found — show admin create or home
+      if (ws) { ws.style.display = ''; ws.classList.remove('hide'); }
+      // Pre-fill admin details for create flow
+      const nameEl  = document.getElementById('ws-admin-name');
+      const emailEl = document.getElementById('ws-admin-email');
+      if (nameEl)  nameEl.textContent  = user.displayName || '—';
+      if (emailEl) emailEl.textContent = user.email || '—';
+      wGoStep('create-club');
+    });
+  }
+  _patch();
+})();
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 5: Updated Profile Menu "Leave Room" button
+     Find in profile-menu HTML (~line 705):
+       <button onclick="profileLogout()" ...>🚪 ออกจากระบบ</button>
+     Replace with:
+     ═══════════════════════════════════════════════════════ -->
+<!--
+  CHANGE IN PROFILE MENU DROPDOWN (around line 705):
+
+  OLD:
+    onclick="profileLogout()"
+    text: 🚪 ออกจากระบบ
+
+  NEW:
+    onclick="profileLeaveRoom()"
+    text: 🚪 ออกจากห้อง
+
+  Also update the display text in _updateProfileMenu for role:
+  OLD: '🏸 สมาชิก'
+  NEW: '🏸 ' + (_sGet('bcm_adminName') || 'สมาชิก')
+-->
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 6: getMyMemberId — updated for sessionId-based lookup
+     Replace the function at ~line 2183
+     ═══════════════════════════════════════════════════════ -->
+<script id="room-first-identity">
+// Updated identity helpers — use sessionId instead of googleUid
+function getMyMemberId() {
+  const sessionId = window._session.myUid || '';
+  if (!sessionId) return null;
+  const m = S.members.find(m => m.sessionId === sessionId);
+  return m ? m.id : null;
+}
+
+function isMyMember(id) {
+  return getMyMemberId() === id;
+}
+
+// isAdmin: Google auth user with admin role (unchanged)
+// isMember: anyone in a room (anonymous or otherwise)
+function isAdmin() { return _sGet('bcm_role') === 'admin'; }
+function isGuest()  { return false; }
+function isMember() { return _sGet('bcm_role') === 'user'; }
+</script>
