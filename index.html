@@ -3523,7 +3523,7 @@ function openFinanceModal(id){
   const session = id ? S.finance?.find(s=>s.id===id) : null;
   if(!session){
     const rsvpOn=(S.members||[]).filter(m=>rsvpState[m.id]===true);
-    if(rsvpOn.length===0){ toast('วันนี้ยังไม่มีการแข่งขัน\nไปที่หน้าแข่งขันเพื่อบันทึกผลการแข่ง','🏸'); return; }
+    if(rsvpOn.length===0){ toast('วันนี้ยังไม่มีการแข่งขัน\nไปที่หน้าแข่งขันเลือกผู้เล่นที่มาในวันนี้','🏸'); return; }
   }
 
   _fParticipants   = new Set();
