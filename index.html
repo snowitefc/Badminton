@@ -3106,7 +3106,7 @@ function renderEloDistribution(){
     </div>`;
   }).join('');
 
-  // Axis ticks (ELO values) — fixed scale to 50k
+  // Axis ticks (ELO values) — fixed scale to 60k
   const tickElos = [10000, 20000, 30000, 40000].filter(e => e >= xMin && e < xMax);
   const tickFS = isMobile ? 16 : 9;
   const tickY  = padT + innerH + (isMobile ? 24 : 16); // ระยะห่างจาก baseline
@@ -3116,8 +3116,8 @@ function renderEloDistribution(){
     <line x1="${tx.toFixed(1)}" y1="${(padT+innerH).toFixed(1)}" x2="${tx.toFixed(1)}" y2="${(padT+innerH+5).toFixed(1)}" stroke="var(--border)" stroke-width="1.5"/>`;
   }).join('');
 
-  // Finish line at 50,000
-  const finishX = toXBell(50000);
+  // Finish line at 60,000
+  const finishX = toXBell(60000);
   const fw = isMobile ? 32  : 18;   // flag width
   const fh = isMobile ? 18  : 10;   // flag height
   const fp = isMobile ? 36  : 18;   // pole height above padT
@@ -3135,8 +3135,8 @@ function renderEloDistribution(){
     <!-- checker row 2 -->
     <rect x="${finishX.toFixed(1)}"             y="${(padT - fp/2 - fp + fh/2).toFixed(1)}" width="${fc}" height="${(fh/2).toFixed(1)}" fill="var(--s1)" opacity="0.7"/>
     <rect x="${(finishX + fc*2).toFixed(1)}"    y="${(padT - fp/2 - fp + fh/2).toFixed(1)}" width="${fc}" height="${(fh/2).toFixed(1)}" fill="var(--s1)" opacity="0.7"/>
-    <!-- 50k label -->
-    <text x="${(finishX-2).toFixed(1)}" y="${tickY.toFixed(1)}" text-anchor="end" font-size="${tickFS}" fill="#f0c040" font-family="IBM Plex Mono,monospace" font-weight="800">50k</text>
+    <!-- 60k label -->
+    <text x="${(finishX-2).toFixed(1)}" y="${tickY.toFixed(1)}" text-anchor="end" font-size="${tickFS}" fill="#f0c040" font-family="IBM Plex Mono,monospace" font-weight="800">60k</text>
   `;
 
   const _chartClubName = getClubName() || 'Snowite';
