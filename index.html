@@ -3106,39 +3106,151 @@ function renderEloDistribution(){
     </div>`;
   }).join('');
 
-  // Axis ticks (ELO values) — fixed scale to 60k
-  const tickElos = [10000, 20000, 30000, 40000].filter(e => e >= xMin && e < xMax);
-  const tickFS = isMobile ? 16 : 9;
-  const tickY  = padT + innerH + (isMobile ? 24 : 16); // ระยะห่างจาก baseline
-  const ticks = tickElos.map(e => {
-    const tx = toXBell(e);
-    return `<text x="${tx.toFixed(1)}" y="${tickY.toFixed(1)}" text-anchor="middle" font-size="${tickFS}" font-weight="700" fill="var(--muted)" font-family="IBM Plex Mono,monospace">${(e/1000).toFixed(0)}k</text>
-    <line x1="${tx.toFixed(1)}" y1="${(padT+innerH).toFixed(1)}" x2="${tx.toFixed(1)}" y2="${(padT+innerH+5).toFixed(1)}" stroke="var(--border)" stroke-width="1.5"/>`;
-  }).join('');
+ // ===== X scale =====
+const finishMargin = isMobile ? 44 : 28; // เผื่อพื้นที่ให้ธง + label
+const innerW = W - padL - padR - finishMargin;
 
-  // Finish line at 60,000
-  const finishX = toXBell(60000);
-  const fw = isMobile ? 32  : 18;   // flag width
-  const fh = isMobile ? 18  : 10;   // flag height
-  const fp = isMobile ? 36  : 18;   // pole height above padT
-  const fc = fw / 4;                 // checker cell size
-  const finishLine = `
-    <!-- finish line -->
-    <line x1="${finishX.toFixed(1)}" y1="${(padT - fp/2).toFixed(1)}" x2="${finishX.toFixed(1)}" y2="${padT+innerH}" stroke="#f0c040" stroke-width="${isMobile?3:2}" stroke-dasharray="4,3" opacity="0.9"/>
-    <!-- checkered flag pole -->
-    <line x1="${finishX.toFixed(1)}" y1="${(padT - fp/2).toFixed(1)}" x2="${finishX.toFixed(1)}" y2="${(padT - fp/2 - fp).toFixed(1)}" stroke="#f0c040" stroke-width="${isMobile?2.5:1.5}"/>
-    <!-- flag body -->
-    <rect x="${finishX.toFixed(1)}" y="${(padT - fp/2 - fp).toFixed(1)}" width="${fw}" height="${fh}" fill="#f0c040" rx="2"/>
-    <!-- checker row 1 -->
-    <rect x="${(finishX + fc).toFixed(1)}"      y="${(padT - fp/2 - fp).toFixed(1)}"        width="${fc}" height="${(fh/2).toFixed(1)}" fill="var(--s1)" opacity="0.7"/>
-    <rect x="${(finishX + fc*3).toFixed(1)}"    y="${(padT - fp/2 - fp).toFixed(1)}"        width="${fc}" height="${(fh/2).toFixed(1)}" fill="var(--s1)" opacity="0.7"/>
-    <!-- checker row 2 -->
-    <rect x="${finishX.toFixed(1)}"             y="${(padT - fp/2 - fp + fh/2).toFixed(1)}" width="${fc}" height="${(fh/2).toFixed(1)}" fill="var(--s1)" opacity="0.7"/>
-    <rect x="${(finishX + fc*2).toFixed(1)}"    y="${(padT - fp/2 - fp + fh/2).toFixed(1)}" width="${fc}" height="${(fh/2).toFixed(1)}" fill="var(--s1)" opacity="0.7"/>
-    <!-- 60k label -->
-    <text x="${(finishX-2).toFixed(1)}" y="${tickY.toFixed(1)}" text-anchor="end" font-size="${tickFS}" fill="#f0c040" font-family="IBM Plex Mono,monospace" font-weight="800">60k</text>
+function toXBell(elo){
+  return padL + ((elo - xMin) / (xMax - xMin)) * innerW;
+}
+
+// ===== Axis ticks =====
+const tickElos = [10000, 20000, 30000, 40000, 50000]
+  .filter(e => e >= xMin && e < xMax);
+
+const tickFS = isMobile ? 16 : 9;
+const tickY  = padT + innerH + (isMobile ? 24 : 16);
+const labelPad = isMobile ? 18 : 10;
+
+const ticks = tickElos.map(e => {
+  const tx = Math.max(
+    padL + labelPad,
+    Math.min(toXBell(e), W - padR - finishMargin)
+  );
+
+  return `
+    <text
+      x="${tx.toFixed(1)}"
+      y="${tickY.toFixed(1)}"
+      text-anchor="middle"
+      font-size="${tickFS}"
+      font-weight="700"
+      fill="var(--muted)"
+      font-family="IBM Plex Mono,monospace"
+    >
+      ${(e / 1000).toFixed(0)}k
+    </text>
+
+    <line
+      x1="${tx.toFixed(1)}"
+      y1="${(padT + innerH).toFixed(1)}"
+      x2="${tx.toFixed(1)}"
+      y2="${(padT + innerH + 5).toFixed(1)}"
+      stroke="var(--border)"
+      stroke-width="1.5"
+    />
   `;
+}).join('');
 
+// ===== Finish line (60k) =====
+const rawFinishX = toXBell(60000);
+
+const fw = isMobile ? 32 : 18; // flag width
+const fh = isMobile ? 18 : 10; // flag height
+const fp = isMobile ? 36 : 18; // pole height
+const fc = fw / 4;
+
+// ป้องกันธงล้นขอบขวา
+const finishX = Math.min(
+  rawFinishX,
+  W - padR - fw - 2
+);
+
+const finishLine = `
+  <!-- finish line -->
+  <line
+    x1="${finishX.toFixed(1)}"
+    y1="${(padT - fp / 2).toFixed(1)}"
+    x2="${finishX.toFixed(1)}"
+    y2="${(padT + innerH).toFixed(1)}"
+    stroke="#f0c040"
+    stroke-width="${isMobile ? 3 : 2}"
+    stroke-dasharray="4,3"
+    opacity="0.9"
+  />
+
+  <!-- flag pole -->
+  <line
+    x1="${finishX.toFixed(1)}"
+    y1="${(padT - fp / 2).toFixed(1)}"
+    x2="${finishX.toFixed(1)}"
+    y2="${(padT - fp / 2 - fp).toFixed(1)}"
+    stroke="#f0c040"
+    stroke-width="${isMobile ? 2.5 : 1.5}"
+  />
+
+  <!-- flag body -->
+  <rect
+    x="${finishX.toFixed(1)}"
+    y="${(padT - fp / 2 - fp).toFixed(1)}"
+    width="${fw}"
+    height="${fh}"
+    fill="#f0c040"
+    rx="2"
+  />
+
+  <!-- checker row 1 -->
+  <rect
+    x="${(finishX + fc).toFixed(1)}"
+    y="${(padT - fp / 2 - fp).toFixed(1)}"
+    width="${fc}"
+    height="${(fh / 2).toFixed(1)}"
+    fill="var(--s1)"
+    opacity="0.7"
+  />
+
+  <rect
+    x="${(finishX + fc * 3).toFixed(1)}"
+    y="${(padT - fp / 2 - fp).toFixed(1)}"
+    width="${fc}"
+    height="${(fh / 2).toFixed(1)}"
+    fill="var(--s1)"
+    opacity="0.7"
+  />
+
+  <!-- checker row 2 -->
+  <rect
+    x="${finishX.toFixed(1)}"
+    y="${(padT - fp / 2 - fp + fh / 2).toFixed(1)}"
+    width="${fc}"
+    height="${(fh / 2).toFixed(1)}"
+    fill="var(--s1)"
+    opacity="0.7"
+  />
+
+  <rect
+    x="${(finishX + fc * 2).toFixed(1)}"
+    y="${(padT - fp / 2 - fp + fh / 2).toFixed(1)}"
+    width="${fc}"
+    height="${(fh / 2).toFixed(1)}"
+    fill="var(--s1)"
+    opacity="0.7"
+  />
+
+  <!-- 60k label -->
+  <text
+    x="${(finishX - 2).toFixed(1)}"
+    y="${tickY.toFixed(1)}"
+    text-anchor="end"
+    font-size="${tickFS}"
+    fill="#f0c040"
+    font-family="IBM Plex Mono,monospace"
+    font-weight="800"
+  >
+    60k
+  </text>
+`;
+  
   const _chartClubName = getClubName() || 'Snowite';
   container.innerHTML = `
     <div style="font-size:11px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
