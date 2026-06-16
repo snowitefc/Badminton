@@ -4849,7 +4849,7 @@ function renderRules(){
       <div class="rrow"><span>ทีมอ่อนแพ้</span><span class="rval" style="color:var(--red)">${RC.favorLoss.toLocaleString()}</span></div>
     </div>
     <div class="rcard"><div class="rcard-t">🎯 Margin Score</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">ชนะแต้มขาด ≥ ${RC.marginThreshold} — เช่น แพ้ 21-${21-RC.marginThreshold} ได้ bonus</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">ชนะแต้มขาด ≥ ${RC.marginThreshold} — เช่น แพ้ 21-${21-RC.marginThreshold} โดนชาร์จ</div>
       <div class="rrow"><span>ชนะ bonus</span><span class="rval" style="color:var(--green)">+${RC.marginBonus.toLocaleString()}</span></div>
       <div class="rrow"><span>แพ้ penalty</span><span class="rval" style="color:var(--red)">−${RC.marginBonus.toLocaleString()}</span></div>
     </div>
@@ -4879,7 +4879,7 @@ function renderRules(){
       <div class="rrow"><span>รีเซ็ตเมื่อ</span><span class="rval">ชนะ 1 เกม</span></div>
     </div>
     <div class="rcard"><div class="rcard-t">💤 Decay (ขาด session)</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">หักคะแนนคนที่ขาดไม่มาเล่น (% ของ ELO ปัจจุบัน)</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">ระบบคะแนนคนที่ไม่มา ตั้งเป็น 0 เพื่อปิด</div>
       <div class="rrow"><span>หักต่อครั้ง</span><span class="rval" style="color:var(--red)">${(RC.decayPct ?? RC.decayAmount ?? 5) ? '−'+(RC.decayPct ?? RC.decayAmount ?? 5)+'%' : 'ปิด'}</span></div>
       <div class="rrow"><span>สูงสุด</span><span class="rval">${RC.decayMaxTimes>=999 ? 'ไม่จำกัด' : RC.decayMaxTimes+' ครั้ง'}</span></div>
     </div>
