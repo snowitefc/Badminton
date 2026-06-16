@@ -7006,7 +7006,7 @@ document.getElementById('modal-bgtier-edit').addEventListener('click', function(
   <div class="modal" style="max-width:380px;">
     <div class="modal-t">✏️ แก้ไข ELO — <span id="elo-edit-member-name" style="color:var(--accent);"></span></div>
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:11px;line-height:1.8;">
-      <div style="font-weight:800;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">📊 ระดับ ELO</div>
+      <div style="font-weight:800;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">📊 ระดับคะแนน</div>
       <div style="display:flex;flex-direction:column;gap:6px;">
         <div style="display:flex;align-items:baseline;gap:8px;"><span style="color:#f472b6;font-weight:800;font-family:var(--mono);min-width:52px;">BB</span><span style="color:var(--muted);">10,000–20,000</span><span style="color:#f472b6;font-size:10px;margin-left:auto;">เบบี้ เริ่มเล่น เน้นฮา</span></div>
         <div style="display:flex;align-items:baseline;gap:8px;"><span style="color:#22c55e;font-weight:800;font-family:var(--mono);min-width:52px;">BG</span><span style="color:var(--muted);">20,001–35,000</span><span style="color:#22c55e;font-size:10px;margin-left:auto;">วิ่งดี ตีเสียเองบ่อย</span></div>
@@ -7016,7 +7016,7 @@ document.getElementById('modal-bgtier-edit').addEventListener('click', function(
       <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);color:var(--muted);">⚠️ กรอกได้ <b style="color:var(--text);">10,000 – 40,000</b> เท่านั้น · &gt;45,000 = <b style="color:#f0c040;">Beyond God!</b></div>
     </div>
     <div class="fg">
-      <label class="fl">ELO ใหม่</label>
+      <label class="fl">กำหนดคะแนนใหม่ - ผู้เล่นระดับ Pro🆙 แนะนำ 40000</label>
       <input class="fi" type="number" id="elo-edit-value" min="10000" max="40000" step="100" placeholder="เช่น 25000" oninput="_eloEditPreview()" onkeydown="if(event.key==='Enter') saveEloEdit()">
     </div>
     <div id="elo-edit-preview" style="min-height:36px;display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--s2);border-radius:8px;margin-bottom:4px;font-size:12px;"></div>
