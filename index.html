@@ -1843,7 +1843,7 @@ const todayStr = () => {
 // Internal keys (BB/BG1/BG2/BG+) ห้ามเปลี่ยน — ใช้ใน Firebase & bgMult
 const TIER_LABEL = { 'BB':'BB', 'BG1':'BG', 'BG2':'BG+', 'BG+':'Beyond' };
 const TIER_DESC  = {
-  'BB' : 'เริ่มเล่น เน้นฮา',
+  'BB' : 'เบบี้ เริ่มเล่น เน้นฮา',
   'BG1': 'วิ่งดี ตีเสียเองบ่อย',
   'BG2': 'เทคนิคดี พลาดน้อย',
   'BG+': 'นี่มัน God ชัดๆ',
@@ -7009,8 +7009,8 @@ document.getElementById('modal-bgtier-edit').addEventListener('click', function(
       <div style="font-weight:800;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">📊 ระดับ ELO</div>
       <div style="display:flex;flex-direction:column;gap:6px;">
         <div style="display:flex;align-items:baseline;gap:8px;"><span style="color:#f472b6;font-weight:800;font-family:var(--mono);min-width:52px;">BB</span><span style="color:var(--muted);">10,000–20,000</span><span style="color:#f472b6;font-size:10px;margin-left:auto;">เบบี้ เริ่มเล่น เน้นฮา</span></div>
-        <div style="display:flex;align-items:baseline;gap:8px;"><span style="color:#22c55e;font-weight:800;font-family:var(--mono);min-width:52px;">BG</span><span style="color:var(--muted);">20,001–35,000</span><span style="color:#22c55e;font-size:10px;margin-left:auto;">วิ่งดีขึ้น ตีเสียเองบ่อย</span></div>
-        <div style="display:flex;align-items:baseline;gap:8px;"><span style="color:#38bdf8;font-weight:800;font-family:var(--mono);min-width:52px;">BG+</span><span style="color:var(--muted);">35,001–40,000</span><span style="color:#38bdf8;font-size:10px;margin-left:auto;">แม่นยำ เทคนิคดี พลาดน้อย</span></div>
+        <div style="display:flex;align-items:baseline;gap:8px;"><span style="color:#22c55e;font-weight:800;font-family:var(--mono);min-width:52px;">BG</span><span style="color:var(--muted);">20,001–35,000</span><span style="color:#22c55e;font-size:10px;margin-left:auto;">วิ่งดี ตีเสียเองบ่อย</span></div>
+        <div style="display:flex;align-items:baseline;gap:8px;"><span style="color:#38bdf8;font-weight:800;font-family:var(--mono);min-width:52px;">BG+</span><span style="color:var(--muted);">35,001–40,000</span><span style="color:#38bdf8;font-size:10px;margin-left:auto;">เทคนิคดี พลาดน้อย</span></div>
         <div style="display:flex;align-items:baseline;gap:8px;"><span style="color:#f0c040;font-weight:800;font-family:var(--mono);min-width:52px;">Beyond</span><span style="color:var(--muted);">45,001+ 🌟</span><span style="color:#f0c040;font-size:10px;margin-left:auto;">นี่มัน God ชัดๆ</span></div>
       </div>
       <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);color:var(--muted);">⚠️ กรอกได้ <b style="color:var(--text);">10,000 – 40,000</b> เท่านั้น · &gt;45,000 = <b style="color:#f0c040;">Beyond God!</b></div>
@@ -7051,7 +7051,7 @@ function _eloEditPreview() {
   else if (val > 40000) { tag='BG2'; tagColor='#38bdf8'; label='BG+ (ใกล้ Beyond)'; }
   else if (val > 35000) { tag='BG2'; tagColor='#38bdf8'; label='BG+ — แม่นยำ เทคนิคดี พลาดน้อย'; }
   else if (val > 20000) { tag='BG1'; tagColor='#22c55e'; label='BG — วิ่งดีขึ้น ตีเสียเองบ่อย'; }
-  else if (val >= 10000){ tag='BB';  tagColor='#f472b6'; label='BB — เริ่มเล่น เน้นฮา'; }
+  else if (val >= 10000){ tag='BB';  tagColor='#f472b6'; label='BB — เบบี้ เริ่มเล่น เน้นฮา'; }
   else                  { tag=null; label=''; }
   const lbl = getBGLabel(tag) || tag || '';
   if (val < 10000 || val > 40000) {
