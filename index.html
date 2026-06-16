@@ -4834,7 +4834,7 @@ function renderRules(){
       <div style="font-size:11px;color:var(--muted);margin-top:6px;">พื้นต่ำสุด ${RC.eloFloor.toLocaleString()} (ติดลบไม่ได้เกินนี้)</div>
     </div>
     <div class="rcard"><div class="rcard-t">🟰 สูสี (|Δ| ≤ ${RC.thresholdDiff.toLocaleString()})</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">avg ELO สองทีมต่างกัน ≤ ${RC.thresholdDiff.toLocaleString()}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">แต้มเฉลี่ยสองทีมต่างกัน ≤ ${RC.thresholdDiff.toLocaleString()}</div>
       <div class="rrow"><span>ชนะ</span><span class="rval" style="color:var(--green)">+${RC.evenWin.toLocaleString()}</span></div>
       <div class="rrow"><span>แพ้</span><span class="rval" style="color:var(--red)">${RC.evenLoss.toLocaleString()}</span></div>
     </div>
@@ -4849,12 +4849,12 @@ function renderRules(){
       <div class="rrow"><span>ทีมอ่อนแพ้</span><span class="rval" style="color:var(--red)">${RC.favorLoss.toLocaleString()}</span></div>
     </div>
     <div class="rcard"><div class="rcard-t">🎯 Margin Score</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">แต้มขาด ≥ ${RC.marginThreshold} — เช่น แพ้ 21-${21-RC.marginThreshold} โดนชาจ</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">ชนะแต้มขาด ≥ ${RC.marginThreshold} — เช่น แพ้ 21-${21-RC.marginThreshold} ได้ bonus</div>
       <div class="rrow"><span>ชนะ bonus</span><span class="rval" style="color:var(--green)">+${RC.marginBonus.toLocaleString()}</span></div>
       <div class="rrow"><span>แพ้ penalty</span><span class="rval" style="color:var(--red)">−${RC.marginBonus.toLocaleString()}</span></div>
     </div>
     <div class="rcard"><div class="rcard-t">🤝 Anti-Carry</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">ELO ในทีมต่างกัน > ${RC.antiCarryThreshold.toLocaleString()}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">คะแนนในทีมต่างกัน > ${RC.antiCarryThreshold.toLocaleString()}</div>
       <div class="rrow"><span>คนคะแนนสูง</span><span class="rval">×${RC.antiCarryHi}</span></div>
       <div class="rrow"><span>คนคะแนนต่ำ</span><span class="rval">×${RC.antiCarryLo}</span></div>
     </div>
@@ -4872,7 +4872,7 @@ function renderRules(){
       <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">คะแนนสุทธิรวมทั้งวัน (ชนะ+แพ้) จะไม่ต่ำกว่าค่านี้ต่อคน</div>
       <div class="rrow"><span>สุทธิต่ำสุด/วัน</span><span class="rval" style="color:var(--red)">${RC.dailyLossCap.toLocaleString()}</span></div>
     </div>
-    <div class="rcard"><div class="rcard-t">🧊 แพ้ติดต่อกัน (Streak)</div>
+    <div class="rcard"><div class="rcard-t">🧊 แพ้ติดต่อกัน (Lose protection)</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">ปกป้องคนซวยแพ้ติดกันหลายเกม</div>
       <div class="rrow"><span>แพ้ 2 เกมติดต่อกัน</span><span class="rval" style="color:var(--blue)">ฟรีซ (0)</span></div>
       <div class="rrow"><span>แพ้เกมถัดไป</span><span class="rval" style="color:var(--accent2)">−${Math.round(RC.streakHalfMult*100)}%</span></div>
